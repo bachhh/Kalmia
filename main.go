@@ -125,8 +125,6 @@ func main() {
 	docsRouter.HandleFunc("/page-group/create", func(w http.ResponseWriter, r *http.Request) { handlers.CreatePageGroup(serviceRegistry, w, r) }).Methods("POST")
 	docsRouter.HandleFunc("/page-group/edit", func(w http.ResponseWriter, r *http.Request) { handlers.EditPageGroup(serviceRegistry, w, r) }).Methods("POST")
 	docsRouter.HandleFunc("/page-group/delete", func(w http.ResponseWriter, r *http.Request) { handlers.DeletePageGroup(dS, w, r) }).Methods("POST")
-	// rsPressMiddleware := middleware.RsPressMiddleware(dS)
-	// r.PathPrefix("/").Handler(rsPressMiddleware(spaHandler))
 
 	rsPressMiddleware := middleware.RsPressMiddleware(dS)
 	r.Use(rsPressMiddleware)

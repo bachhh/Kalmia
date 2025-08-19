@@ -1,0 +1,4 @@
+**/node_modules
+postgres_data
+rspress_data
+minio_data

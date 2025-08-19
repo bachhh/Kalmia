@@ -137,13 +137,11 @@ func (service *DocService) ImportGitbook(url, username, password string, cfg *co
 	}
 
 	err := utils.IsRepoAccessible(url, username, password)
-
 	if err != nil {
 		return "", fmt.Errorf("failed_to_check_repo_access")
 	}
 
 	tempDir, err := os.MkdirTemp("", "gitbook-import-")
-
 	if err != nil {
 		return "", fmt.Errorf("failed_to_create_temp_dir")
 	}
@@ -162,14 +160,12 @@ func (service *DocService) ImportGitbook(url, username, password string, cfg *co
 	}
 
 	_, err = git.PlainClone(tempDir, false, cloneOptions)
-
 	if err != nil {
 		return "", fmt.Errorf("failed_to_clone_repo")
 	}
 
 	doc := make(map[string]interface{})
 	err = parseMarkdownFiles(tempDir, doc, cfg)
-
 	if err != nil {
 		return "", fmt.Errorf("failed to parse markdown files: %v", err)
 	}
@@ -181,7 +177,6 @@ func (service *DocService) ImportGitbook(url, username, password string, cfg *co
 	}
 
 	jsonBytes, err := utils.MarshalWithoutEscape(doc)
-
 	if err != nil {
 		return "", fmt.Errorf("failed to convert to JSON: %v", err)
 	}

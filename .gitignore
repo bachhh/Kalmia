@@ -10,3 +10,5 @@ web/build/*
 .vscode/
 postgres_data/
 minio_data/
+rspress_data/
+ykkap/

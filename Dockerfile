@@ -10,7 +10,8 @@ WORKDIR /app/web
 COPY web/package*.json ./
 COPY web/pnpm*.yaml ./
 # RUN npm install
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --no-frozen-lockfile
+
 COPY web ./
 # RUN npm run build
 RUN pnpm run build

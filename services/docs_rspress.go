@@ -754,7 +754,7 @@ func writeMetaJSON(metaElements []MetaElement, dirPath string) error {
 	}
 
 	metaFilePath := filepath.Join(dirPath, "_meta.json")
-	err = os.WriteFile(metaFilePath, metaJSON, 0644)
+	err = os.WriteFile(metaFilePath, metaJSON, 0o644)
 	if err != nil {
 		return fmt.Errorf("error writing _meta.json file: %w", err)
 	}
@@ -1238,7 +1238,7 @@ func (service *DocService) GetRsPress(urlPath string) (uint, string, string, boo
 
 	docPath := filepath.Join("data", "rspress_data", fmt.Sprintf("doc_%d", doc.ID), "build")
 	if _, err := os.Stat(docPath); os.IsNotExist(err) {
-		return 0, "", "", false, fmt.Errorf("rspress_build_not_found")
+		return 0, "", "", false, fmt.Errorf("rspress_build_not_found on path %s", docPath)
 	}
 
 	files, err := os.ReadDir(docPath)
