@@ -553,7 +553,6 @@ func DeletePageGroup(service *services.DocService, w http.ResponseWriter, r *htt
 }
 
 func GetRsPress(service *services.DocService, w http.ResponseWriter, r *http.Request) {
-	fmt.Println("hit 2")
 	urlPath := r.URL.Path
 
 	_, docPath, baseURL, _, err := service.GetRsPress(urlPath)

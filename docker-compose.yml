@@ -8,6 +8,7 @@ services:
       - "${PORT:-2727}:2727"
     volumes:
       - ./config.json:/app/config.json
+      - ./rspress_data:/app/data/rspress_data
     environment:
       - DATABASE_TYPE=postgres
       - DATABASE_HOST=postgres
