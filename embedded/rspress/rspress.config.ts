@@ -1,5 +1,6 @@
 import * as path from 'path';
 import { defineConfig } from 'rspress/config';
+import { pluginLastUpdated } from '@rspress/plugin-last-updated';
 
 export default defineConfig({
   root: path.join(__dirname, 'docs'),
@@ -21,7 +22,7 @@ export default defineConfig({
     selector: '.rspress-doc img',
   },
   outDir: '__OUT_DIR__',
-  plugins: [],
+  plugins: [ pluginLastUpdated() ],
   builderConfig: {
     source: {
       alias: {
