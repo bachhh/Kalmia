@@ -103,6 +103,7 @@ func (service *DocService) GenerateHead(docID uint, pageId uint, pageType string
 		if doc.MetaImage != "" {
 			metaImage = doc.MetaImage
 		} else {
+			// TODO remove
 			metaImage = "https://imagedelivery.net/SM0H54GQmiDTGcg4Xr4iPA/c5359df9-c88f-4767-397e-ee4299a42c00/public"
 		}
 
@@ -177,6 +178,7 @@ func (service *DocService) GenerateHead(docID uint, pageId uint, pageType string
 		if doc.MetaImage != "" {
 			metaImage = doc.MetaImage
 		} else {
+			// TODO: remove
 			metaImage = "https://downloads-bucket.difuse.io/kalmia-meta-resized.png"
 		}
 
@@ -414,13 +416,17 @@ func (service *DocService) StartUpdate(docId uint, rootParentId uint) (string, e
 	}
 
 	replacements := map[string]string{
-		"__TITLE__":             doc.Name,
-		"__TAG_LINE__":          doc.Description,
-		"__BASE_URL__":          doc.BaseURL,
-		"__FAVICON__":           "https://downloads-bucket.difuse.io/favicon-final-kalmia.ico",
-		"__META_IMAGE__":        "https://imagedelivery.net/SM0H54GQmiDTGcg4Xr4iPA/c5359df9-c88f-4767-397e-ee4299a42c00/public",
-		"__NAVBAR_TITLE__":      "doc.Name",
-		"__LOGO_LIGHT__":        "https://downloads-bucket.difuse.io/kalmia-sideways-black.png",
+		"__TITLE__":    doc.Name,
+		"__TAG_LINE__": doc.Description,
+		"__BASE_URL__": doc.BaseURL,
+		// TODO remove
+		"__FAVICON__": "https://downloads-bucket.difuse.io/favicon-final-kalmia.ico",
+		// TODO remove
+		"__META_IMAGE__":   "https://imagedelivery.net/SM0H54GQmiDTGcg4Xr4iPA/c5359df9-c88f-4767-397e-ee4299a42c00/public",
+		"__NAVBAR_TITLE__": "doc.Name",
+		// TODO remove
+		"__LOGO_LIGHT__": "https://downloads-bucket.difuse.io/kalmia-sideways-black.png",
+		// TODO remove
 		"__LOGO_DARK__":         "https://downloads-bucket.difuse.io/kalmia-sideways-white.png",
 		"__COPYRIGHT_TEXT__":    "Iridia Solutions Pvt. Ltd. Built With Kalmia",
 		"__URL__":               "http://localhost:3000",
@@ -1023,6 +1029,7 @@ func (service *DocService) WriteHomePage(documentation models.Documentation, con
 		if documentation.MetaImage != "" {
 			metaImage = documentation.MetaImage
 		} else {
+			// TODO remove
 			metaImage = "https://downloads-bucket.difuse.io/kalmia-meta-resized.png"
 		}
 
