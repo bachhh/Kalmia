@@ -21,6 +21,7 @@ export interface ModalContextType {
   editModal: boolean;
   deleteModal: boolean;
   cloneDocumentModal: boolean;
+  importFolderModal: boolean;
   currentModalItem: ModalItem | null;
   pageSizeDropdown: boolean;
   loadingModal: boolean;
@@ -42,6 +43,7 @@ const defaultContext: ModalContextType = {
   deleteModal: false,
   pageGroupListModal: false,
   cloneDocumentModal: false,
+  importFolderModal: false,
   currentModalItem: null,
   pageSizeDropdown: false,
   loadingModal: false,
@@ -68,6 +70,7 @@ export const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
   const [editModal, setEditModal] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
   const [cloneDocumentModal, setCloneDocumentModal] = useState(false);
+  const [importFolderModal, setImportFolderModal] = useState(false);
   const [pageGroupListModal, SetPageGroupListModal] = useState(false);
   const [gitBookModal, setGitBookModal] = useState(false);
   const [currentModalItem, setCurrentModalItem] = useState<ModalItem | null>(
@@ -97,6 +100,9 @@ export const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
         break;
       case "cloneDocument":
         setCloneDocumentModal(true);
+        break;
+      case "importFolder":
+        setImportFolderModal(true);
         break;
       case "pageSizeDropdown":
         setpageSizeDropdown(true);
@@ -162,6 +168,7 @@ export const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
         editModal,
         deleteModal,
         cloneDocumentModal,
+        importFolderModal,
         currentModalItem,
         setCurrentModalItem,
         pageSizeDropdown,

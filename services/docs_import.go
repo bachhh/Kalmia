@@ -1,8 +1,10 @@
 package services
 
 import (
+	"archive/zip"
 	"bytes"
 	"fmt"
+	"io"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -182,4 +184,105 @@ func (service *DocService) ImportGitbook(url, username, password string, cfg *co
 	}
 
 	return string(jsonBytes), nil
+}
+
+func (service *DocService) ImportGitbookFolder(reader io.Reader) (string, error) {
+	// Create temp dir
+	tempDir, err := os.MkdirTemp("", "gitbook-folder-")
+	if err != nil {
+		return "", fmt.Errorf("failed_to_create_temp_dir")
+	}
+	defer os.RemoveAll(tempDir)
+
+	// Create a temp zip file
+	zipPath := filepath.Join(tempDir, "upload.zip")
+	zipFile, err := os.Create(zipPath)
+	if err != nil {
+		return "", fmt.Errorf("failed_to_create_zip_file")
+	}
+
+	_, err = io.Copy(zipFile, reader)
+	zipFile.Close()
+	if err != nil {
+		return "", fmt.Errorf("failed_to_write_zip: %v", err)
+	}
+
+	// Open the zip archive
+	r, err := zip.OpenReader(zipPath)
+	if err != nil {
+		return "", fmt.Errorf("failed_to_open_zip: %v", err)
+	}
+	defer r.Close()
+
+	err = extractZip(r, tempDir)
+	if err != nil {
+		return "", err
+	}
+
+	// Parse markdown files
+	doc := make(map[string]interface{})
+	err = parseMarkdownFiles(tempDir, doc, nil) // cfg = nil for now
+	if err != nil {
+		return "", fmt.Errorf("failed to parse markdown files: %v", err)
+	}
+
+	// Normalize HTML (remove newlines)
+	for key, value := range doc {
+		if htmlContent, ok := value.(string); ok {
+			doc[key] = strings.ReplaceAll(htmlContent, "\n", "")
+		}
+	}
+
+	// Convert to JSON
+	jsonBytes, err := utils.MarshalWithoutEscape(doc)
+	if err != nil {
+		return "", fmt.Errorf("failed to convert to JSON: %v", err)
+	}
+
+	return string(jsonBytes), nil
+}
+
+// extractZip extracts all files from a zip archive into destDir.
+// It ensures safety against ZipSlip attacks.
+func extractZip(zr *zip.ReadCloser, destDir string) error {
+	for _, f := range zr.File {
+		fpath := filepath.Join(destDir, f.Name)
+
+		// Prevent ZipSlip vulnerability
+		if !strings.HasPrefix(fpath, filepath.Clean(destDir)+string(os.PathSeparator)) {
+			return fmt.Errorf("illegal_file_path: %s", fpath)
+		}
+
+		if f.FileInfo().IsDir() {
+			if err := os.MkdirAll(fpath, os.ModePerm); err != nil {
+				return fmt.Errorf("failed_to_create_dir: %v", err)
+			}
+			continue
+		}
+
+		if err := os.MkdirAll(filepath.Dir(fpath), os.ModePerm); err != nil {
+			return fmt.Errorf("failed_to_create_dir: %v", err)
+		}
+
+		dstFile, err := os.OpenFile(fpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+		if err != nil {
+			return fmt.Errorf("failed_to_open_extracted_file: %v", err)
+		}
+
+		rc, err := f.Open()
+		if err != nil {
+			dstFile.Close()
+			return fmt.Errorf("failed_to_open_file_in_zip: %v", err)
+		}
+
+		if _, err := io.Copy(dstFile, rc); err != nil {
+			dstFile.Close()
+			rc.Close()
+			return fmt.Errorf("failed_to_extract_file: %v", err)
+		}
+
+		dstFile.Close()
+		rc.Close()
+	}
+	return nil
 }

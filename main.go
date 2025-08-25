@@ -107,6 +107,9 @@ func main() {
 	docsRouter.HandleFunc("/documentation/version", func(w http.ResponseWriter, r *http.Request) { handlers.CreateDocumentationVersion(dS, w, r) }).Methods("POST")
 	docsRouter.HandleFunc("/documentation/reorder-bulk", func(w http.ResponseWriter, r *http.Request) { handlers.BulkReorderPageOrPageGroup(dS, w, r) }).Methods("POST")
 	docsRouter.HandleFunc("/documentation/root-parent-id", func(w http.ResponseWriter, r *http.Request) { handlers.GetRootParentId(dS, w, r) }).Methods("GET")
+	authRouter.HandleFunc("/documentation/import-folder", func(w http.ResponseWriter, r *http.Request) {
+		handlers.ImportFolder(serviceRegistry, w, r, config.ParsedConfig)
+	}).Methods("POST")
 
 	importRouter := docsRouter.PathPrefix("/import").Subrouter()
 	importRouter.Use(middleware.EnsureAuthenticated(aS))
