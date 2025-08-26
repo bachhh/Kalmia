@@ -618,7 +618,7 @@ func (service *DocService) writePagesToDirectory(pages []models.Page, dirPath st
 		if fullPage.IsIntroPage {
 			fileName = "index" + markdownExt
 		} else {
-			fileName = utils.StringToFileString(fullPage.Title) + markdownExt
+			fileName = utils.StringToFileString(fullPage.Slug) + markdownExt
 		}
 
 		err = utils.WriteToFile(filepath.Join(dirPath, fileName), content)
@@ -642,7 +642,7 @@ func (service *DocService) writePagesToDirectory(pages []models.Page, dirPath st
 		} else {
 			metaElements = append(metaElements, MetaElement{
 				Type:  "file",
-				Name:  utils.StringToFileString(fullPage.Title),
+				Name:  strings.TrimPrefix(fullPage.Slug, "/"),
 				Label: fullPage.Title,
 				Path:  fullPage.Slug,
 				Order: order,
@@ -687,7 +687,7 @@ func (service *DocService) writePageGroupsToDirectory(pageGroups []models.PageGr
 			}
 			metaElements = append(metaElements, MetaElement{
 				Type:  "file",
-				Name:  utils.StringToFileString(page.Title),
+				Name:  strings.TrimPrefix(page.Slug, "/"),
 				Label: page.Title,
 				Path:  page.Slug,
 				Order: order,
@@ -902,7 +902,7 @@ func (service *DocService) WriteContents(docId uint, rootParentId uint, preHash 
 			} else {
 				rootMetaElements = append(rootMetaElements, MetaElement{
 					Type:  "file",
-					Name:  utils.StringToFileString(page.Title),
+					Name:  strings.TrimPrefix(page.Slug, "/"),
 					Label: page.Title,
 					Path:  page.Slug,
 					Order: order,
@@ -933,6 +933,8 @@ func (service *DocService) WriteContents(docId uint, rootParentId uint, preHash 
 		}
 
 		// Write root _meta.json
+		// note that service.writePagesToDirectory already written meta.json once,
+		// and it's OK to overwrite it again here.
 		if err := writeMetaJSON(rootMetaElements, userContentPath); err != nil {
 			return err
 		}
@@ -958,6 +960,9 @@ func (service *DocService) WriteContents(docId uint, rootParentId uint, preHash 
 	if newHash != preHash || deletionsOccurred {
 		needRebuild = true
 	}
+
+	// fmt.Println(rootParentId, needRebuild)
+	// return nil
 
 	return service.RsPressBuild(rootParentId, needRebuild)
 }
