@@ -720,7 +720,7 @@ func (service *DocService) writePageGroupsToDirectory(pageGroups []models.PageGr
 			metaElements = append(metaElements, MetaElement{
 				Type:        "dir",
 				Name:        utils.StringToFileString(nestedGroup.Name),
-				Label:       nestedGroup.Name,
+				Label:       nestedGroup.Label,
 				Path:        utils.StringToFileString(nestedGroup.Name),
 				Order:       order,
 				Collapsible: &[]bool{true}[0],
@@ -924,7 +924,7 @@ func (service *DocService) WriteContents(docId uint, rootParentId uint, preHash 
 			rootMetaElements = append(rootMetaElements, MetaElement{
 				Type:        "dir",
 				Name:        utils.StringToFileString(group.Name),
-				Label:       group.Name,
+				Label:       group.Label,
 				Path:        utils.StringToFileString(group.Name),
 				Order:       order,
 				Collapsible: &[]bool{true}[0],
