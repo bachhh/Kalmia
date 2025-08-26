@@ -60,6 +60,7 @@ interface CreateVersionPayload {
 
 interface PageGroupPayload {
   name?: string;
+  label?: string;
   documentationId?: number;
   parentId?: number;
   id?: number;
@@ -228,7 +229,6 @@ export const updateDocumentation = (data: DocumentationPayload) =>
 export const deleteDocumentation = (id: number) =>
   makeRequest("/kal-api/docs/documentation/delete", "post", { id });
 
-
 export const createDocumentationVersion = (data: CreateVersionPayload) =>
   makeRequest("/kal-api/docs/documentation/version", "post", data);
 
@@ -276,7 +276,6 @@ export const createUser = (data: UserPayload) =>
 
 export const updateUser = (data: UpdateUserPayload) =>
   makeRequest("/kal-api/auth/user/edit", "post", data);
-
 
 export const uploadFile = (data: FormData) =>
   makeRequest("/kal-api/auth/user/upload-file", "post", data);

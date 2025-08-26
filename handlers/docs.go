@@ -450,6 +450,7 @@ func GetPageGroup(service *services.DocService, w http.ResponseWriter, r *http.R
 func CreatePageGroup(services *services.ServiceRegistry, w http.ResponseWriter, r *http.Request) {
 	type Request struct {
 		Name            string `json:"name" validate:"required"`
+		Label           string `json:"label" validate:"required"`
 		DocumentationID uint   `json:"documentationId" validate:"required"`
 		ParentID        *uint  `json:"parentId"`
 		Order           *uint  `json:"order"`
@@ -474,6 +475,7 @@ func CreatePageGroup(services *services.ServiceRegistry, w http.ResponseWriter, 
 
 	pageGroup := models.PageGroup{
 		Name:            req.Name,
+		Label:           req.Label,
 		DocumentationID: req.DocumentationID,
 		AuthorID:        user.ID,
 		Author:          user,
@@ -488,6 +490,7 @@ func CreatePageGroup(services *services.ServiceRegistry, w http.ResponseWriter, 
 	if req.Order != nil {
 		pageGroup.Order = req.Order
 	}
+	fmt.Printf("page group %+v\n", pageGroup)
 
 	_, err = services.DocService.CreatePageGroup(&pageGroup)
 	if err != nil {
@@ -502,6 +505,7 @@ func EditPageGroup(services *services.ServiceRegistry, w http.ResponseWriter, r 
 	type Request struct {
 		ID              uint   `json:"id" validate:"required"`
 		Name            string `json:"name" validate:"required"`
+		Label           string `json:"label" validate:"required"`
 		DocumentationID uint   `json:"documentationId" validate:"required"`
 		ParentID        *uint  `json:"parentId"`
 		Order           *uint  `json:"order"`
@@ -524,7 +528,7 @@ func EditPageGroup(services *services.ServiceRegistry, w http.ResponseWriter, r 
 		return
 	}
 
-	err = services.DocService.EditPageGroup(user, req.ID, req.Name, req.DocumentationID, req.ParentID, req.Order)
+	err = services.DocService.EditPageGroup(user, req.ID, req.Name, req.Label, req.DocumentationID, req.ParentID, req.Order)
 	if err != nil {
 		SendJSONResponse(http.StatusInternalServerError, w, map[string]string{"status": "error", "message": err.Error()})
 		return

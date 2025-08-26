@@ -178,7 +178,16 @@ func (service *DocService) CreatePageGroup(group *models.PageGroup) (uint, error
 
 	return group.ID, nil
 }
-func (service *DocService) EditPageGroup(user models.User, id uint, name string, documentationID uint, parentID *uint, order *uint) error {
+
+func (service *DocService) EditPageGroup(
+	user models.User,
+	id uint,
+	name string,
+	label string,
+	documentationID uint,
+	parentID *uint,
+	order *uint,
+) error {
 	var pageGroup models.PageGroup
 	if err := service.DB.First(&pageGroup, id).Error; err != nil {
 		return fmt.Errorf("page_group_not_found")
@@ -231,7 +240,6 @@ func (service *DocService) EditPageGroup(user models.User, id uint, name string,
 	}
 
 	docId, err := service.GetDocumentationIDOfPageGroup(id)
-
 	if err != nil {
 		return fmt.Errorf("failed_to_get_documentation_id")
 	}
@@ -305,7 +313,6 @@ func (service *DocService) DeletePageGroup(id uint) error {
 
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
@@ -349,7 +356,6 @@ func (service *DocService) ReorderPageGroup(id uint, order *uint, parentID *uint
 	}
 
 	docId, err := service.GetDocumentationIDOfPageGroup(id)
-
 	if err != nil {
 		return fmt.Errorf("failed_to_get_documentation_id")
 	}

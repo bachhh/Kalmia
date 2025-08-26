@@ -52,7 +52,6 @@ func SetupDatabase(env string, database string, dataPath string) *gorm.DB {
 		&models.PageGroup{},
 		&models.Page{},
 	)
-
 	if err != nil {
 		logger.Panic("failed to migrate database", zap.Error(err))
 	}
@@ -61,7 +60,6 @@ func SetupDatabase(env string, database string, dataPath string) *gorm.DB {
 	db.Exec("UPDATE page_groups SET is_page_group = TRUE WHERE is_page_group IS NULL")
 
 	err = updateUserPermissions(db)
-
 	if err != nil {
 		logger.Error("User permissions update failed", zap.Error(err))
 	}
@@ -98,7 +96,6 @@ func SetupBasicData(db *gorm.DB, admins []config.User) {
 			}
 
 			jsonPermissions, err := json.Marshal(permissions)
-
 			if err != nil {
 				logger.Error("Failed to marshal permissions", zap.String("username", admin.Username), zap.Error(err))
 				continue

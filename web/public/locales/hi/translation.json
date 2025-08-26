@@ -11,6 +11,7 @@
     "edit_documentation": "दस्तावेज़ संपादित करें",
     "update_documentation": "दस्तावेज़ अपडेट करें",
     "title_label": "शीर्षक",
+    "label_label": "लेबल",
     "enter_new_document_name": "नई दस्तावेज़ का नाम दर्ज करें",
     "version": "संस्करण",
     "version_placeholder": "दस्तावेज़ का संस्करण दर्ज करें",
@@ -80,6 +81,7 @@
 
     "new_page_Group": "नई समूह",
     "title_group_placeholder": "पृष्ठ समूह का शीर्षक दर्ज करें",
+    "label_group_placeholder": "पेज समूह लेबल दर्ज करें",
 
     "title_page_placeholder": "पृष्ठ शीर्षक दर्ज करें",
     "slug": "स्लग",
@@ -112,6 +114,7 @@
     "scale": "पैमाना",
     "sign_out": "साइन आउट",
     "title_is_required": "शीर्षक आवश्यक है",
+    "label_is_required": "लेबल आवश्यक है",
     "slug_is_required": "स्लग आवश्यक है",
     "version_is_required": "संस्करण आवश्यक है",
     "description_is_required": "विवरण आवश्यक है",

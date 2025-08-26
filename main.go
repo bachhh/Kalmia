@@ -50,6 +50,7 @@ func main() {
 
 	go func() {
 		startupWg.Wait()
+		// start delete job and build job process every 10 seconds
 		for {
 			dS.DeleteJob()
 			dS.BuildJob()

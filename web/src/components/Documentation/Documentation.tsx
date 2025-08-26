@@ -368,15 +368,20 @@ export const Documentation = memo(function Documentation() {
     [selectedVersion, navigate, t, closeModal],
   );
 
-  const handleCreatePageGroup = async (title: string) => {
+  const handleCreatePageGroup = async (title: string, label: string) => {
     if (title === "") {
       toastMessage(t("title_is_required"), "warning");
+      return;
+    }
+    if (label === "") {
+      toastMessage(t("label_is_required"), "warning");
       return;
     }
     const lastOrder: number = getLastPageOrder(groupsAndPageData);
 
     const createUserPayload = {
       name: title,
+      label: label,
       documentationId: Number(selectedVersion?.id),
       order: lastOrder,
       ...(pageGroupId && { parentId: Number(pageGroupId) }),

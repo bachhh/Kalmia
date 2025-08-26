@@ -11,10 +11,11 @@
     "edit_documentation": "ഡോക്യുമെന്റേഷൻ എഡിറ്റ് ചെയ്യുക",
     "update_documentation": "ഡോക്യുമെന്റേഷൻ അപ്‌ഡേറ്റ് ചെയ്യുക",
     "title_label": "ശീർഷകം",
+    "label_label": "ലേബൽ",
     "enter_new_document_name": "പുതിയ ഡോക്യുമെന്റിന്റെ പേര് നൽകുക",
     "version": "വർഷം",
     "version_placeholder": "ഡോക്യുമെന്റിന്റെ വർഷം നൽകുക",
-    "description": "വിവരണം",
+    "description": "വിവരണം"r
     "description_placeholder": "നിങ്ങളുടെ പുതിയ ഡോക്യുമെന്റിന്റെ വിവരണം",
     "custom_css": "കസ്റ്റം CSS",
     "custom_css_placeholder": "കസ്റ്റം CSS സ്റ്റൈലുകൾ നൽകുക",
@@ -80,6 +81,7 @@
 
     "new_page_Group": "പുതിയ ഗ്രൂപ്പ്",
     "title_group_placeholder": "പേജ് ഗ്രൂപ്പിന്റെ ശീർഷകം നൽകുക",
+    "label_group_placeholder": "പേജ് ഗ്രൂപ്പ് ലേബൽ നൽകുക",
 
     "title_page_placeholder": "പേജ് ശീർഷകം നൽകുക",
     "slug": "സ്ലഗ്",
@@ -112,6 +114,7 @@
     "scale": "സ്കെയിൽ",
     "sign_out": "സൈൻ ഔട്ട്",
     "title_is_required": "ശീർഷകം ആവശ്യമാണ്",
+    "label_is_required": "ലേബൽ ആവശ്യമാണ്",
     "slug_is_required": "സ്ലഗ് ആവശ്യമാണ്",
     "version_is_required": "വർഷം ആവശ്യമാണ്",
     "description_is_required": "വിവരണം ആവശ്യമാണ്",

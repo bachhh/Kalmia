@@ -12,6 +12,7 @@
         "edit_documentation":"Edit Documentation",
         "update_documentation": "Update Documentation",
         "title_label": "Title",
+        "label_label": "Label",
         "enter_new_document_name": "Enter new document name",
         "version": "Version",
         "version_placeholder": "Enter document version",
@@ -132,6 +133,7 @@
 
         "new_page_Group": "New Group",
         "title_group_placeholder": "Enter page group title",
+        "label_group_placeholder": "Enter page group label",
 
         "title_page_placeholder":"Enter page title",
         "slug":"Slug",
@@ -164,6 +166,7 @@
         "scale": "Scale",
         "sign_out":"Sign Out",
         "title_is_required":"Title is required",
+        "label_is_required":"Label is required",
         "slug_is_required":"Slug is required",
         "version_is_required":"Version is required",
         "description_is_required":"Description is required",

@@ -36,6 +36,7 @@ type PageGroup struct {
 	AuthorID        uint       `json:"authorId,omitempty"`
 	Author          User       `gorm:"foreignKey:AuthorID" json:"author,omitempty"`
 	Name            string     `json:"name,omitempty"`
+	Label           string     `json:"label,omitempty"`
 	CreatedAt       *time.Time `gorm:"autoCreateTime" json:"createdAt,omitempty"`
 	UpdatedAt       *time.Time `gorm:"autoUpdateTime" json:"updatedAt,omitempty"`
 	Order           *uint      `json:"order,omitempty"`
