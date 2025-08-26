@@ -32,7 +32,7 @@ func (service *DocService) GetDocumentations() ([]models.Documentation, error) {
 	}).Preload("Editors", func(db *gorm.DB) *gorm.DB {
 		return db.Select("ID", "Username", "Email", "Photo")
 	}).Preload("PageGroups", func(db *gorm.DB) *gorm.DB {
-		return db.Select("ID", "DocumentationID", "Name", "CreatedAt", "UpdatedAt", "AuthorID", "Order")
+		return db.Select("ID", "DocumentationID", "Name", "Label", "CreatedAt", "UpdatedAt", "AuthorID", "Order")
 	}).Preload("PageGroups.Author", func(db *gorm.DB) *gorm.DB {
 		return db.Select("ID", "Username", "Email", "Photo")
 	}).Preload("PageGroups.Editors", func(db *gorm.DB) *gorm.DB {
@@ -79,7 +79,7 @@ func (service *DocService) GetDocumentation(id uint) (models.Documentation, erro
 	}).Preload("Editors", func(db *gorm.DB) *gorm.DB {
 		return db.Select("ID", "Username", "Email", "Photo")
 	}).Preload("PageGroups", func(db *gorm.DB) *gorm.DB {
-		return db.Select("ID", "DocumentationID", "Name", "CreatedAt", "UpdatedAt", "AuthorID", "Order")
+		return db.Select("ID", "DocumentationID", "Name", "Label", "CreatedAt", "UpdatedAt", "AuthorID", "Order")
 	}).Preload("PageGroups.Author", func(db *gorm.DB) *gorm.DB {
 		return db.Select("ID", "Username", "Email", "Photo")
 	}).Preload("PageGroups.Editors", func(db *gorm.DB) *gorm.DB {

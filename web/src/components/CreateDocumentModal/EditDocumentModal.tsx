@@ -15,17 +15,25 @@ import { ModalContext, ModalContextType } from "../../context/ModalContext";
 
 interface EditDocumentModalProps {
   title?: string;
-  updateData: (title: string, version: string, id: number) => void;
+  label?: string;
+  updateData: (
+    title: string,
+    label: string,
+    version: string,
+    id: number,
+  ) => void;
   id: number;
 }
 
 export default function EditDocumentModal({
   title,
+  label,
   updateData,
   id,
 }: EditDocumentModalProps) {
   const { t } = useTranslation();
   const [editTitle, setEditTitle] = useState<string>("");
+  const [editLabel, setEditLabel] = useState<string>("");
   const [version, setVersion] = useState<string>("");
   const { closeModal, cloneDocumentModal } = useContext(
     ModalContext,
@@ -41,7 +49,8 @@ export default function EditDocumentModal({
 
   useEffect(() => {
     setEditTitle(title || "");
-  }, [title, id]);
+    setEditLabel(label || "");
+  }, [title, label, id]);
 
   const handleCloseClick = useCallback(() => {
     if (cloneDocumentModal) {
@@ -54,7 +63,7 @@ export default function EditDocumentModal({
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       event.preventDefault();
-      updateData(editTitle, version, id);
+      updateData(editTitle, editLabel, version, id);
     }
   };
 
@@ -147,8 +156,27 @@ export default function EditDocumentModal({
                   </div>
                 )}
 
+                {title && (
+                  <div>
+                    <span className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                      {t("label_label")}
+                    </span>
+                    <input
+                      value={editLabel}
+                      onChange={(e) => handleInputChange(e, setEditLabel)}
+                      onKeyDown={handleKeyDown}
+                      type="text"
+                      name="label"
+                      id="label"
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                      placeholder={t("label_placeholder")}
+                      required
+                    />
+                  </div>
+                )}
+
                 <button
-                  onClick={() => updateData(editTitle, version, id)}
+                  onClick={() => updateData(editTitle, editLabel, version, id)}
                   type="button"
                   className="flex justify-center items-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
                 >

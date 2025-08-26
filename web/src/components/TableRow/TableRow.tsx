@@ -88,7 +88,7 @@ export default memo(function TableRow({
             />
           )}
 
-          {isPageGroup(obj) ? obj.name : obj.title}
+          {isPageGroup(obj) ? obj.name + " ( " + obj.label + " )" : obj.title}
         </Link>
       </td>
 

@@ -338,10 +338,16 @@ export const Documentation = memo(function Documentation() {
   };
 
   const handlePageGroupUpdate = useCallback(
-    async (editTitle: string, _version: string, id: number) => {
+    async (
+      editTitle: string,
+      editLabel: string,
+      _version: string,
+      id: number,
+    ) => {
       const updatePageGroupPayload = {
         id,
         name: editTitle,
+        label: editLabel,
         documentationId: Number(selectedVersion?.id),
         ...(pageGroupId && { parentId: Number(pageGroupId) }),
       };
@@ -1081,6 +1087,7 @@ export const Documentation = memo(function Documentation() {
                   {editModal && (
                     <EditDocumentModal
                       title={currentModalItem?.name}
+                      label={currentModalItem?.label}
                       id={currentModalItem?.id ?? 0}
                       updateData={handlePageGroupUpdate}
                     />

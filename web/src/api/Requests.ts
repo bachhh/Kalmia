@@ -280,9 +280,6 @@ export const updateUser = (data: UpdateUserPayload) =>
 export const uploadFile = (data: FormData) =>
   makeRequest("/kal-api/auth/user/upload-file", "post", data);
 
-export const importFolder = (data: FormData) =>
-  makeRequest("/documentation/import-folder", "post", data);
-
 export const uploadAssetsFile = (data: FormData) =>
   makeRequest("/kal-api/auth/user/assets/upload-file", "post", data);
 

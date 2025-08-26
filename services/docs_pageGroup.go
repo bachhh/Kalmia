@@ -75,6 +75,7 @@ func convertPageGroupToMap(group models.PageGroup) map[string]interface{} {
 		"id":              group.ID,
 		"documentationId": group.DocumentationID,
 		"name":            group.Name,
+		"label":           group.Label,
 		"parentId":        group.ParentID,
 		"order":           group.Order,
 		"createdAt":       group.CreatedAt,
@@ -117,7 +118,7 @@ func (service *DocService) GetPageGroups() ([]map[string]interface{}, error) {
 		Preload("Pages.Editors").
 		Preload("Author").
 		Preload("Editors").
-		Select("ID", "Name", "DocumentationID", "ParentID", "Order", "CreatedAt", "UpdatedAt", "AuthorID", "LastEditorID", "IsPageGroup").
+		Select("ID", "Name", "Label", "DocumentationID", "ParentID", "Order", "CreatedAt", "UpdatedAt", "AuthorID", "LastEditorID", "IsPageGroup").
 		Where("parent_id IS NULL").
 		Find(&pageGroups).Error; err != nil {
 		return nil, fmt.Errorf("failed_to_fetch_page_groups")
@@ -215,6 +216,7 @@ func (service *DocService) EditPageGroup(
 	}
 
 	pageGroup.Name = name
+	pageGroup.Label = label
 	pageGroup.DocumentationID = documentationID
 	pageGroup.ParentID = parentID
 
