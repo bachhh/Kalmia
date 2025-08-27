@@ -157,22 +157,9 @@ export default function EditPage() {
     { type: "paragraph", content: "" } as any, // eslint-disable-line @typescript-eslint/no-explicit-any
   ]);
 
-  const generateSlug = (title: string) => {
-    return (
-      "/" +
-      title
-        .toLowerCase()
-        .trim()
-        .replace(/[\s]+/g, "-")
-        .replace(/[^\w-]+/g, "")
-    );
-  };
   const updateContent = (newContent: string, name: string) => {
     setPageData((prevPageData) => {
       const updatedPageData = { ...prevPageData, [name]: newContent };
-      if (name === "title") {
-        updatedPageData.slug = generateSlug(newContent);
-      }
 
       return updatedPageData;
     });
@@ -395,6 +382,16 @@ export default function EditPage() {
       return;
     }
 
+    const removeBoldFromHeading = (node: object): void => {
+      if (Array.isArray(node.content)) {
+        node.content.forEach((item) => {
+          if (item.type === "text" && item.styles?.bold) {
+            delete item.styles.bold;
+          }
+        });
+      }
+    };
+
     const reader = new FileReader();
 
     reader.onload = async (event: ProgressEvent<FileReader>) => {
@@ -405,6 +402,9 @@ export default function EditPage() {
           await editor.tryParseMarkdownToBlocks(fileContent);
 
         for (const content of parsedContent) {
+          if (content.type === "heading") {
+            removeBoldFromHeading(content);
+          }
           if (content.props) {
             if ("url" in content.props) {
               const url = content.props.url;

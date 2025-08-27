@@ -132,7 +132,6 @@ export const List: React.FC<ListProps> = ({ rawJson }) => {
   if (type === "") return null;
 
   if (type === "kal-list-disc") {
-    console.log('kal-list-disc');
     
     return (
       <ul className="kal-list-disc">

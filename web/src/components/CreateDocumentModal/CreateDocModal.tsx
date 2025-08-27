@@ -343,70 +343,73 @@ export default function CreateDocModal() {
     }
   }, []);
 
-  const [uploadedFiles, setUploadedFiles] = useState<{ [name: string]: { name?: string, uploaded: boolean } }>({
+  const [uploadedFiles, setUploadedFiles] = useState<{
+    [name: string]: { name?: string; uploaded: boolean };
+  }>({
     favicon: {
       name: "",
-      uploaded: false
+      uploaded: false,
     },
     navImageDark: {
       name: "",
-      uploaded: false
+      uploaded: false,
     },
     navImage: {
       name: "",
-      uploaded: false
+      uploaded: false,
     },
     metaImage: {
       name: "",
-      uploaded: false
-    }
-  })
+      uploaded: false,
+    },
+  });
 
   const handleUploadAssetFile = async (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    const { name } = e.target
+    const { name } = e.target;
 
     // check for files
 
-    const { files } = e.target
+    const { files } = e.target;
 
     if (!files) {
-      toastMessage("no_files_selected", "warning")
-      return
+      toastMessage("no_files_selected", "warning");
+      return;
     }
 
-    const file = files[0]
+    const file = files[0];
 
-    const formData = new globalThis.FormData()
+    const formData = new globalThis.FormData();
 
-    formData.append("upload_tag_name", name)
-    formData.append(name, file)
+    formData.append("upload_tag_name", name);
+    formData.append(name, file);
 
-    let res: ApiResponse<{ status: "error" | "success", message: string, file: string }>
+    let res: ApiResponse<{
+      status: "error" | "success";
+      message: string;
+      file: string;
+    }>;
 
     try {
-      res = await uploadAssetsFile(formData)
+      res = await uploadAssetsFile(formData);
     } catch (error) {
-
-      const err = error as AxiosError
-      toastMessage(err.message, "error")
-      return
+      const err = error as AxiosError;
+      toastMessage(err.message, "error");
+      return;
     }
     if (!res.data) {
-      toastMessage("no_response_from_server", "error")
-      return
+      toastMessage("no_response_from_server", "error");
+      return;
     }
 
     setUploadedFiles((prevData) => ({
       ...prevData,
-      [name]: { name: res.data?.file, uploaded: true }
-    }))
+      [name]: { name: res.data?.file, uploaded: true },
+    }));
 
-    toastMessage("updated_file", "success")
-    // DEBUG: remove after debug session
-    console.log("Uploaded files: ", uploadedFiles)
-  }
+    toastMessage("updated_file", "success");
+  };
 
   const handleChange = (
     e:
@@ -449,12 +452,12 @@ export default function CreateDocModal() {
 
     const gitFields = gitDeployOn
       ? {
-        gitUser: formData.gitUser || "",
-        gitRepo: formData.gitRepo || "",
-        gitEmail: formData.gitEmail || "",
-        gitPassword: formData.gitPassword || "",
-        gitBranch: formData.gitBranch || "",
-      }
+          gitUser: formData.gitUser || "",
+          gitRepo: formData.gitRepo || "",
+          gitEmail: formData.gitEmail || "",
+          gitPassword: formData.gitPassword || "",
+          gitBranch: formData.gitBranch || "",
+        }
       : {};
 
     const payload: DocumentationPayload = {
@@ -484,7 +487,7 @@ export default function CreateDocModal() {
       bucketFavicon: uploadedFiles.favicon.name || "",
       bucketMetaImage: uploadedFiles.metaImage.name || "",
       bucketNavImage: uploadedFiles.navImage.name || "",
-      bucketNavImageDark: uploadedFiles.navImageDark.name || ""
+      bucketNavImageDark: uploadedFiles.navImageDark.name || "",
     };
     let result;
 
@@ -735,7 +738,6 @@ export default function CreateDocModal() {
                     name="navImage"
                     uploaded={uploadedFiles.navImage.uploaded}
                   />
-
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
