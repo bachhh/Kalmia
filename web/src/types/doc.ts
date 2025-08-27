@@ -36,6 +36,7 @@ export interface PageGroup {
   id: number;
   lastEditorId: number;
   name: string;
+  label: string;
   order: number;
   pages: Page[];
   parentId?: number | null;
