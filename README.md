@@ -11,6 +11,22 @@ https://github.com/user-attachments/assets/19d7b3e3-0f8d-49b6-a8e1-b8885ceec467
 
 Kalmia is a Go tool with a web interface for managing RsPress documentation. It supports multiple versions, multiple users, and includes a markdown editor for easy edits. Please visit our [website](https://kalmia.difuse.io) for more information on how to use Kalmia and its features.
 
+## Change from upstream
+
+**1. Add a new "label" field for Page Group**
+
+The sidebar in Outline will display PageGroup.label instead of PageGroup.name.
+The underlying folder will still be created using PageGroup.name.
+
+This change separates the display layer from the storage layer, allowing label
+to be used for i18n-friendly names. PageGroup.Name remains required and must be
+ASCII-only, since it is used as the actual folder name.
+
+**2. Change Page's Filename to use Slug, while Page Name is used for Outline's display**
+ 
+Similar to (1) this is to accomodate i18n-friendly names for page. While
+keeping storage filename ASCII.
+
 ## Requirements
 
 - Go >= 1.22
@@ -111,3 +127,4 @@ In the root directory in a separate terminal to start the Go server. Make sure y
 ## License
 
 AGPL-3.0
+
