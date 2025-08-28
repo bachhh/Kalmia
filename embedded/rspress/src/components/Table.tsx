@@ -11,11 +11,20 @@ interface CellStyles {
 }
 
 interface TableCell {
-  type: 'text' | 'link';
+  type: 'text' | 'link' | 'image';
   text?: string;
   href?: string;
   styles?: CellStyles;
   content?: CellContent[];
+  props?: {
+    backgroundColor?: string;
+    textAlignment?: 'left' | 'center' | 'right';
+    name?: string;
+    url?: string;
+    caption?: string;
+    showPreview?: boolean;
+    previewWidth?: number;
+  };
 }
 
 interface CellContent {
@@ -57,6 +66,39 @@ const renderTableCell = (cell: TableCell, cellIndex: number): React.ReactNode =>
     styles.underline ? 'kal-underline' : ''
   ].filter(Boolean);
 
+  if (cell.type === 'image' && cell.props) {
+    const {
+      url,
+      name = '',
+      caption,
+      showPreview = true,
+      previewWidth = 150,
+      textAlignment = 'center'
+    } = cell.props;
+
+    const imageClasses = [
+      'kal-max-w-full',
+      'kal-h-auto',
+      showPreview ? `kal-max-w-[${previewWidth}px]` : '',
+      'kal-object-contain'
+    ].filter(Boolean).join(' ');
+
+    const containerClasses = [
+      'kal-flex',
+      'kal-flex-col',
+      textAlignment === 'left' ? 'kal-items-start' : 
+      textAlignment === 'right' ? 'kal-items-end' : 'kal-items-center',
+      'kal-p-1'
+    ].join(' ');
+
+    return (
+      <div key={cellIndex} className={containerClasses}>
+        <img src={url} alt={name} className={imageClasses} />
+        {caption && <p className="kal-mt-1 kal-text-xs kal-text-center">{caption}</p>}
+      </div>
+    );
+  }
+
   if (cell.type === 'link' && cell.content && cell.content.length > 0) {
     const linkContent = cell.content[0];
     const cellClasses = [
@@ -78,6 +120,7 @@ const renderTableCell = (cell: TableCell, cellIndex: number): React.ReactNode =>
     </span>
   );
 };
+
 
 export const Table: React.FC<TableProps> = ({ rawJson }) => {
     const { props, content } = rawJson;

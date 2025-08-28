@@ -392,6 +392,16 @@ export default function EditPage() {
       }
     };
 
+    const removeDoubleAngleBrackets = (block: Block): void => {
+      if (Array.isArray(block.content)) {
+        block.content.forEach((node) => {
+          if (node.type === "text" && typeof node.text === "string") {
+            node.text = node.text.replace(/<</g, "");
+          }
+        });
+      }
+    };
+
     const reader = new FileReader();
 
     reader.onload = async (event: ProgressEvent<FileReader>) => {
@@ -402,9 +412,11 @@ export default function EditPage() {
           await editor.tryParseMarkdownToBlocks(fileContent);
 
         for (const content of parsedContent) {
+          console.log(JSON.stringify(content));
           if (content.type === "heading") {
             removeBoldFromHeading(content);
           }
+          removeDoubleAngleBrackets(content);
           if (content.props) {
             if ("url" in content.props) {
               const url = content.props.url;
