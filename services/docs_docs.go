@@ -239,7 +239,7 @@ func (service *DocService) CreateDocumentation(documentation *models.Documentati
 
 	introPage := models.Page{
 		Title:           "Introduction",
-		Slug:            "/",
+		Slug:            "/index",
 		Content:         introPageContent,
 		DocumentationID: documentation.ID,
 		AuthorID:        user.ID,
