@@ -14,6 +14,27 @@ type Block struct {
 	Children []Block                `json:"children"`
 }
 
+// InlineContent represents a piece of styled text within a cell.
+type InlineContent struct {
+	Type   string            `json:"type"`
+	Text   string            `json:"text"`
+	Styles map[string]string `json:"styles"`
+}
+
+// Cell represents a single cell in a table row, containing an array of InlineContent.
+type Cell []InlineContent
+
+// Row represents a table row, containing an array of Cells.
+type Row struct {
+	Cells []Cell `json:"cells"`
+}
+
+// TableContent represents the main content of a table block.
+type TableContent struct {
+	Type string `json:"type"`
+	Rows []Row  `json:"rows"`
+}
+
 func ApplyTextStyles(text string, styles map[string]interface{}) string {
 	jsxStyles := make([]string, 0)
 
@@ -106,6 +127,7 @@ func BlockToMarkdown(block Block, depth int, numbering *[]int) string {
 	content := GetTextContent(block.Content)
 	styledContent := ApplyBlockStyles(content, block.Props, block.Type)
 
+	// MAYBE: use enum
 	switch block.Type {
 	case "heading":
 		return HeadingToMarkdown(block)
@@ -113,7 +135,7 @@ func BlockToMarkdown(block Block, depth int, numbering *[]int) string {
 		return checkListItemToMarkdown(block, depth, styledContent)
 	case "procode":
 		return ProcodeToMarkdown(block.Props)
-	case "paragraph", "table", "image", "video", "audio", "file", "alert", "numberedListItem", "bulletListItem":
+	case "paragraph", "image", "table", "video", "audio", "file", "alert", "numberedListItem", "bulletListItem":
 		return BlockToMDX(block)
 	default:
 		return ""
