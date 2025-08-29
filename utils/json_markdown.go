@@ -21,20 +21,6 @@ type InlineContent struct {
 	Styles map[string]string `json:"styles"`
 }
 
-// Cell represents a single cell in a table row, containing an array of InlineContent.
-type Cell []InlineContent
-
-// Row represents a table row, containing an array of Cells.
-type Row struct {
-	Cells []Cell `json:"cells"`
-}
-
-// TableContent represents the main content of a table block.
-type TableContent struct {
-	Type string `json:"type"`
-	Rows []Row  `json:"rows"`
-}
-
 func ApplyTextStyles(text string, styles map[string]interface{}) string {
 	jsxStyles := make([]string, 0)
 
