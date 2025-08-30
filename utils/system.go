@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -11,7 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func RunNpmCommand(dir string, command string, args ...string) error {
+func RunNpmCommand(debug bool, dir string, command string, args ...string) error {
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		return fmt.Errorf("directory '%s' does not exist", dir)
 	}
@@ -26,10 +28,23 @@ func RunNpmCommand(dir string, command string, args ...string) error {
 		cmd := exec.Command("pnpm", fullCommand...)
 		cmd.Dir = dir
 
-		output, err = cmd.CombinedOutput()
+		if debug {
+			var outputBuf bytes.Buffer
+			multiWriter := io.MultiWriter(&outputBuf, os.Stdout)
 
-		if err == nil {
-			return nil
+			cmd.Stdout = multiWriter
+			cmd.Stderr = multiWriter
+
+			err = cmd.Run()
+			if err == nil {
+				return nil
+			}
+			output = outputBuf.Bytes()
+		} else {
+			output, err = cmd.CombinedOutput()
+			if err == nil {
+				return nil
+			}
 		}
 
 		if len(args) > 0 && args[0] == "install" {

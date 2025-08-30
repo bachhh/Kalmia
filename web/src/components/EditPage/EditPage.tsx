@@ -170,6 +170,13 @@ export default function EditPage() {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     //@ts-ignore
     initialContent: editorContent,
+    tables: {
+      // splitCells: true,
+      cellBackgroundColor: true,
+      cellTextColor: true,
+      headers: true,
+    },
+
     uploadFile: async (file) => {
       const formData = new FormData();
       formData.append("upload", file);

@@ -352,7 +352,7 @@ func (service *DocService) InitRsPressPackageCache() error {
 
 	installStart := time.Now()
 
-	err = utils.RunNpmCommand(packageCachePath, "install")
+	err = utils.RunNpmCommand(false, packageCachePath, "install")
 	if err != nil {
 		return err
 	}
@@ -386,7 +386,7 @@ func (service *DocService) InitRsPress(docId uint) error {
 		return fmt.Errorf("NPM/PNPM ping failed for %d initialization", docId)
 	}
 
-	err = utils.RunNpmCommand(docPath, "install")
+	err = utils.RunNpmCommand(false, docPath, "install")
 	if err != nil {
 		return err
 	}
@@ -1130,7 +1130,7 @@ func (service *DocService) RsPressBuild(docId uint, rebuild bool) error {
 			return fmt.Errorf("npm_or_ping_failed")
 		}
 
-		err := utils.RunNpmCommand(docPath, "install")
+		err := utils.RunNpmCommand(false, docPath, "install")
 		if err != nil {
 			return err
 		}
@@ -1145,7 +1145,7 @@ func (service *DocService) RsPressBuild(docId uint, rebuild bool) error {
 			return err
 		}
 
-		err = utils.RunNpmCommand(docPath, "run", "build")
+		err = utils.RunNpmCommand(service.logSubCmd, docPath, "run", "build")
 		if err != nil {
 			return err
 		}
@@ -1159,7 +1159,7 @@ func (service *DocService) RsPressBuild(docId uint, rebuild bool) error {
 			}
 			if err := os.Rename(tmpBuildPath, buildPath); err != nil {
 				if utils.PathExists(backupBuildPath) {
-					os.Rename(backupBuildPath, buildPath)
+					_ = os.Rename(backupBuildPath, buildPath)
 				}
 				return fmt.Errorf("failed to rename tmpBuildPath to buildPath: %w", err)
 			}

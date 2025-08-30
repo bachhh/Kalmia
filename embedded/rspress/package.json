@@ -8,6 +8,9 @@
     "preview": "rspress preview"
   },
   "dependencies": {
+    "@blocknote/core": "^0.35.0",
+    "@blocknote/mantine": "^0.35.0",
+    "@blocknote/react": "^0.35.0",
     "lucide-react": "0.427.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",

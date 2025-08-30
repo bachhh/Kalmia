@@ -42,6 +42,7 @@ type GoogleOAuth struct {
 }
 
 type Config struct {
+	LogSubCmd      bool           `json:"logSubCmd"`
 	Environment    string         `json:"environment"`
 	Port           int            `json:"port"`
 	Database       string         `json:"database"`

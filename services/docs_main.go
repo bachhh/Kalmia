@@ -9,8 +9,9 @@ import (
 type DocService struct {
 	DB          *gorm.DB
 	UWBMutexMap sync.Map
+	logSubCmd   bool
 }
 
-func NewDocService(db *gorm.DB) *DocService {
-	return &DocService{DB: db}
+func NewDocService(db *gorm.DB, logSubCmd bool) *DocService {
+	return &DocService{DB: db, logSubCmd: logSubCmd}
 }

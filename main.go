@@ -38,7 +38,7 @@ func main() {
 
 	db.InitCache()
 
-	serviceRegistry := services.NewServiceRegistry(d)
+	serviceRegistry := services.NewServiceRegistry(d, cfg.LogSubCmd)
 	aS := serviceRegistry.AuthService
 	dS := serviceRegistry.DocService
 

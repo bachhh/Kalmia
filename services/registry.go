@@ -7,9 +7,9 @@ type ServiceRegistry struct {
 	DocService  *DocService
 }
 
-func NewServiceRegistry(db *gorm.DB) *ServiceRegistry {
+func NewServiceRegistry(db *gorm.DB, logSubCmd bool) *ServiceRegistry {
 	return &ServiceRegistry{
 		AuthService: NewAuthService(db),
-		DocService:  NewDocService(db),
+		DocService:  NewDocService(db, logSubCmd),
 	}
 }
