@@ -97,16 +97,27 @@ export const Table: React.FC<TableProps> = ({ rawJson }) => {
     "kal-font-bold",
     "kal-uppercase",
     "kal-tracking-wider",
-    "kal-text-gray-600",
+    // "kal-text-gray-600",
     "kal-bg-gray-50",
     "kal-border",
     "kal-border-gray-300",
   ].join(" ");
 
+  const tdClasses = ["kal-border", "kal-border-gray-300", "kal-p-2"].join(" ");
+
   // TODO: adjust column width to BlockNote's param
   return (
     <div className={containerClasses}>
       <table className={tableClasses}>
+        {/* Define column widths for the entire table */}
+        <colgroup>
+          {content.columnWidths.map((width, index) => (
+            <col
+              key={index}
+              style={width ? { width: `${width}px` } : undefined}
+            />
+          ))}
+        </colgroup>
         {/* if header row is set, promote the first row to <thead> */}
         {content.headerRows === 1 && (
           <thead>
@@ -131,10 +142,7 @@ export const Table: React.FC<TableProps> = ({ rawJson }) => {
             .map((row, rowIndex) => (
               <tr key={rowIndex}>
                 {row.cells.map((cell, cellIndex) => (
-                  <td
-                    key={cellIndex}
-                    className="kal-border kal-border-gray-300 kal-p-2"
-                  >
+                  <td key={cellIndex} className={tdClasses}>
                     {cell.content.map((cellContent, cellContentIndex) =>
                       renderTableCell(cellContent, cellContentIndex),
                     )}
