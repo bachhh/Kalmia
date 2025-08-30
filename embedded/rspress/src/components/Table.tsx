@@ -90,26 +90,58 @@ export const Table: React.FC<TableProps> = ({ rawJson }) => {
     .filter(Boolean)
     .join(" ");
 
+  // styling for thead
+  const headerClasses = [
+    "kal-p-2",
+    "kal-text-left",
+    "kal-font-bold",
+    "kal-uppercase",
+    "kal-tracking-wider",
+    "kal-text-gray-600",
+    "kal-bg-gray-50",
+    "kal-border",
+    "kal-border-gray-300",
+  ].join(" ");
+
   // TODO: adjust column width to BlockNote's param
   return (
     <div className={containerClasses}>
       <table className={tableClasses}>
-        {/*TODO: handle table header */}
+        {/* if header row is set, promote the first row to <thead> */}
+        {content.headerRows === 1 && (
+          <thead>
+            {content.rows.slice(0, 1).map((headerRow, rowIndex) => (
+              <tr key={rowIndex}>
+                {headerRow.cells.map((cell, cellIndex) => (
+                  <th key={cellIndex} className={headerClasses}>
+                    {cell.content.map((cellContent, cellContentIndex) =>
+                      renderTableCell(cellContent, cellContentIndex),
+                    )}
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
+        )}
+
         <tbody>
-          {content.rows.map((row, rowIndex) => (
-            <tr key={rowIndex}>
-              {row.cells.map((cell, cellIndex) => (
-                <td
-                  key={cellIndex}
-                  className="kal-border kal-border-gray-300 kal-p-2"
-                >
-                  {cell.content.map((cellContent, cellContentIndex) =>
-                    renderTableCell(cellContent, cellContentIndex),
-                  )}
-                </td>
-              ))}
-            </tr>
-          ))}
+          {/* if header row is set, skip over the first row */}
+          {content.rows
+            .slice(content.headerRows === 1 ? 1 : 0)
+            .map((row, rowIndex) => (
+              <tr key={rowIndex}>
+                {row.cells.map((cell, cellIndex) => (
+                  <td
+                    key={cellIndex}
+                    className="kal-border kal-border-gray-300 kal-p-2"
+                  >
+                    {cell.content.map((cellContent, cellContentIndex) =>
+                      renderTableCell(cellContent, cellContentIndex),
+                    )}
+                  </td>
+                ))}
+              </tr>
+            ))}
         </tbody>
       </table>
     </div>

@@ -403,6 +403,7 @@ export default function EditPage() {
       if (Array.isArray(block.content)) {
         block.content.forEach((node) => {
           if (node.type === "text" && typeof node.text === "string") {
+            // console.log(node);
             node.text = node.text.replace(/<</g, "");
           }
         });
