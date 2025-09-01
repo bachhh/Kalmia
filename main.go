@@ -61,6 +61,8 @@ func main() {
 	/* Setup router */
 	router := mux.NewRouter()
 	router.Use(middleware.RecoverWithLog(logger.Logger))
+	router.Use(middleware.BodyLimit(config.ParsedConfig.BodyLimitMb))
+
 	kRouter := router.PathPrefix("/kal-api").Subrouter()
 
 	// INFO: files could be fetched without authentication

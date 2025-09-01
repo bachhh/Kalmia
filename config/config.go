@@ -56,6 +56,7 @@ type Config struct {
 	GithubOAuth    GithubOAuth    `json:"githubOAuth"`
 	MicrosoftOAuth MicrosoftOAuth `json:"microsoftOAuth"`
 	GoogleOAuth    GoogleOAuth    `json:"googleOAuth"`
+	BodyLimitMb    int64          `json:"body_limit_mb"`
 }
 
 var ParsedConfig *Config
@@ -88,6 +89,11 @@ func ParseConfig(path string) *Config {
 	// Added for backwards compatibility
 	if ParsedConfig.MaxFileSize == 0 {
 		ParsedConfig.MaxFileSize = 10
+	}
+
+	// sensible default for body limit
+	if ParsedConfig.BodyLimitMb == 0 {
+		ParsedConfig.BodyLimitMb = 50
 	}
 
 	return ParsedConfig
