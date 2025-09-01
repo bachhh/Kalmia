@@ -6,6 +6,7 @@
   "assetStorage": "local",
   "maxFileSize": 10,
   "sessionSecret": "thisisaverysecretkeyhasalotoflengthandeverything!",
+  "bodyLimitMb": 50,
   "users": [
     {
       "username": "admin",

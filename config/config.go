@@ -56,7 +56,7 @@ type Config struct {
 	GithubOAuth    GithubOAuth    `json:"githubOAuth"`
 	MicrosoftOAuth MicrosoftOAuth `json:"microsoftOAuth"`
 	GoogleOAuth    GoogleOAuth    `json:"googleOAuth"`
-	BodyLimitMb    int64          `json:"body_limit_mb"`
+	BodyLimitMb    int64          `json:"bodyLimitMb"`
 }
 
 var ParsedConfig *Config
