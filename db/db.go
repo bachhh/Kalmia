@@ -51,6 +51,7 @@ func SetupDatabase(env string, database string, dataPath string) *gorm.DB {
 		&models.BuildTriggers{},
 		&models.PageGroup{},
 		&models.Page{},
+		&models.File{},
 	)
 	if err != nil {
 		logger.Panic("failed to migrate database", zap.Error(err))

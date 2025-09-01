@@ -14,10 +14,22 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/gabriel-vasile/mimetype"
+	"github.com/google/uuid"
 )
 
 // TODO: update the parameters to accept services.UploadedFileData{}
-func UploadToS3Storage(file io.Reader, originalFilename, contentType string, parsedConfig *config.Config) (string, error) {
+func UploadToS3Storage(
+	file io.Reader,
+	originalFilename, contentType string,
+	parsedConfig *config.Config,
+) (string, string, error) {
+	// create a unique key for our object
+	keyByte, err := uuid.NewV7()
+	if err != nil {
+		return "", "", err
+	}
+	key := keyByte.String()
+
 	sess, err := session.NewSession(&aws.Config{
 		Endpoint:         aws.String(parsedConfig.S3.Endpoint),
 		Region:           aws.String(parsedConfig.S3.Region),
@@ -25,14 +37,14 @@ func UploadToS3Storage(file io.Reader, originalFilename, contentType string, par
 		S3ForcePathStyle: aws.Bool(parsedConfig.S3.UsePathStyle),
 	})
 	if err != nil {
-		return "", fmt.Errorf("error creating AWS session: %v", err)
+		return "", "", fmt.Errorf("error creating AWS session: %v", err)
 	}
 
 	svc := newS3Client(sess)
 
 	fileBytes, err := io.ReadAll(file)
 	if err != nil {
-		return "", fmt.Errorf("error reading file: %v", err)
+		return "", "", fmt.Errorf("error reading file: %v", err)
 	}
 
 	ext := filepath.Ext(originalFilename)
@@ -50,26 +62,28 @@ func UploadToS3Storage(file io.Reader, originalFilename, contentType string, par
 	}
 
 	filename := fmt.Sprintf("upload-%d%s", time.Now().UnixNano(), ext)
+	contentDisposition := fmt.Sprintf("attachment; filename=\"%s\"", originalFilename)
 
 	_, err = svc.PutObject(&s3.PutObjectInput{
-		Bucket:        aws.String(parsedConfig.S3.Bucket),
-		Key:           aws.String(filename),
-		Body:          bytes.NewReader(fileBytes),
-		ContentLength: aws.Int64(int64(len(fileBytes))),
-		ContentType:   aws.String(contentType),
+		Bucket:             aws.String(parsedConfig.S3.Bucket),
+		Key:                &key,
+		Body:               bytes.NewReader(fileBytes),
+		ContentLength:      aws.Int64(int64(len(fileBytes))),
+		ContentType:        aws.String(contentType),
+		ContentDisposition: aws.String(contentDisposition), // <-- This is the new field
 	})
 	if err != nil {
-		return "", fmt.Errorf("error uploading to S3-compatible storage: %v", err)
+		return "", "", fmt.Errorf("error uploading to S3-compatible storage: %v", err)
 	}
 
 	var publicURL string
 	if parsedConfig.AssetStorage == "local" {
-		publicURL = fmt.Sprintf("/kal-api/file/get/%s", filename)
+		publicURL = fmt.Sprintf("http://localhost:%d/kal-api/file/get/%s", parsedConfig.Port, filename)
 	} else {
 		publicURL = fmt.Sprintf(parsedConfig.S3.PublicUrlFormat, filename)
 	}
 
-	return publicURL, nil
+	return key, publicURL, nil
 }
 
 var newS3Client = func(sess *session.Session) s3iface.S3API {
