@@ -59,8 +59,9 @@ func main() {
 	}()
 
 	/* Setup router */
-	r := mux.NewRouter()
-	kRouter := r.PathPrefix("/kal-api").Subrouter()
+	router := mux.NewRouter()
+	router.Use(middleware.RecoverWithLog(logger.Logger))
+	kRouter := router.PathPrefix("/kal-api").Subrouter()
 
 	// INFO: files could be fetched without authentication
 	fileRouter := kRouter.PathPrefix("/file").Subrouter()
@@ -128,15 +129,15 @@ func main() {
 	docsRouter.HandleFunc("/page-group/delete", func(w http.ResponseWriter, r *http.Request) { handlers.DeletePageGroup(dS, w, r) }).Methods("POST")
 
 	rsPressMiddleware := middleware.RsPressMiddleware(dS)
-	r.Use(rsPressMiddleware)
+	router.Use(rsPressMiddleware)
 
 	spaHandler := createSPAHandler()
-	r.PathPrefix("/").HandlerFunc(spaHandler)
+	router.PathPrefix("/").HandlerFunc(spaHandler)
 
 	logger.Info("Starting server", zap.Int("port", cfg.Port))
 
-	http.Handle("/", r)
-	http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), middleware.CorsMiddleware(r))
+	http.Handle("/", router)
+	_ = http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), middleware.CorsMiddleware(router))
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
