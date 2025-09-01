@@ -15,7 +15,7 @@ var Logger *zap.Logger
 func InitializeLogger(env string, logLevel string, dataPath string) {
 	logsPath := filepath.Join(dataPath, "logs")
 	if _, err := os.Stat(logsPath); os.IsNotExist(err) {
-		if err = os.MkdirAll(logsPath, 0755); err != nil {
+		if err = os.MkdirAll(logsPath, 0o755); err != nil {
 			panic(fmt.Errorf("failed to create log directory: %v", err))
 		}
 	}
