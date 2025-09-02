@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
-	"time"
 
 	"git.difuse.io/Difuse/kalmia/config"
 	"github.com/aws/aws-sdk-go/aws"
@@ -14,7 +13,14 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/gabriel-vasile/mimetype"
+	"github.com/google/uuid"
 )
+
+type UploadFileResult struct {
+	S3Key      string
+	PublicURL  string // only valid
+	PrivateURL string
+}
 
 // TODO: update the parameters to accept services.UploadedFileData{}
 func UploadToS3Storage(
@@ -22,6 +28,14 @@ func UploadToS3Storage(
 	originalFilename, contentType string,
 	parsedConfig *config.Config,
 ) (string, string, error) {
+	key, err := uuid.NewV7()
+	if err != nil {
+		return "", "", err
+	}
+	ext := filepath.Ext(originalFilename)
+	filename := fmt.Sprintf("upload-%s%s", key.String(), ext)
+	contentDisposition := fmt.Sprintf("attachment; filename=\"%s\"", originalFilename)
+
 	sess, err := session.NewSession(&aws.Config{
 		Endpoint: aws.String(parsedConfig.S3.Endpoint),
 		Region:   aws.String(parsedConfig.S3.Region),
@@ -43,7 +57,6 @@ func UploadToS3Storage(
 		return "", "", fmt.Errorf("error reading file: %v", err)
 	}
 
-	ext := filepath.Ext(originalFilename)
 	if ext == "" {
 		// TODO: update this part to detect mimetype once on UploadFile()
 		detectedMIME := mimetype.Detect(fileBytes)
@@ -57,9 +70,6 @@ func UploadToS3Storage(
 		contentType = "application/octet-stream"
 	}
 
-	filename := fmt.Sprintf("upload-%d%s", time.Now().UnixNano(), ext)
-	contentDisposition := fmt.Sprintf("attachment; filename=\"%s\"", originalFilename)
-
 	_, err = svc.PutObject(&s3.PutObjectInput{
 		Bucket:             aws.String(parsedConfig.S3.Bucket),
 		Key:                aws.String(filename),
@@ -72,14 +82,18 @@ func UploadToS3Storage(
 		return "", "", fmt.Errorf("error uploading to S3-compatible storage: %v", err)
 	}
 
-	var publicURL string
+	// NOTE: depending on system setting, can be private / public URL
+	// - private object can only be proxy via API
+	// - public object is accessed directly via S3 public URL
+	var accessURL string
 	if parsedConfig.AssetStorage == "local" {
-		publicURL = fmt.Sprintf("http://localhost:%d/kal-api/file/get/%s", parsedConfig.Port, filename)
+		accessURL = fmt.Sprintf("http://localhost:%d/kal-api/file/get/%s", parsedConfig.Port, filename)
 	} else {
-		publicURL = fmt.Sprintf(parsedConfig.S3.PublicUrlFormat, filename)
+		// TODO: use private URL
+		accessURL = fmt.Sprintf(parsedConfig.S3.PublicUrlFormat, filename)
 	}
 
-	return filename, publicURL, nil
+	return filename, accessURL, nil
 }
 
 var newS3Client = func(sess *session.Session) s3iface.S3API {

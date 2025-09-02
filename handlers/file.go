@@ -65,7 +65,7 @@ func GetFile(service *gorm.DB, w http.ResponseWriter, r *http.Request, cfg *conf
 	http.ServeContent(w, r, filename, time.Now(), bytes.NewReader(body))
 	logger.Info("Successfully sent object file: " + filename)
 
-	// INFO: use this if the above doesn't work
+	// TODO: set content type and content disposition according to value stored in database
 	// deletectedMime := mimetype.Detect(body)
 	// w.Header().Set("Content-Disposition", "attachment; filename="+filename)
 	// w.Header().Set("Content-Type", deletectedMime.String())
