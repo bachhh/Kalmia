@@ -86,12 +86,11 @@ func UploadToS3Storage(
 	// - private object can only be proxy via API
 	// - public object is accessed directly via S3 public URL
 	var accessURL string
-	if parsedConfig.AssetStorage == "local" {
-		accessURL = fmt.Sprintf("http://localhost:%d/kal-api/file/get/%s", parsedConfig.Port, filename)
-	} else {
-		// TODO: use private URL
-		accessURL = fmt.Sprintf(parsedConfig.S3.PublicUrlFormat, filename)
+	method := "https"
+	if parsedConfig.Host == "localhost" {
+		method = "http"
 	}
+	accessURL = fmt.Sprintf("%s://%s:%d/kal-api/file/get/%s", method, parsedConfig.Host, parsedConfig.Port, filename)
 
 	return filename, accessURL, nil
 }

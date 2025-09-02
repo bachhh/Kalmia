@@ -1,5 +1,6 @@
 {
   "environment": "production",
+  "host": "localhost",
   "port": 2727,
   "database": "postgres://user:password@postgres:5432/kalmia?sslmode=disable",
   "logLevel": "debug",
