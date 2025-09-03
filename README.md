@@ -27,6 +27,13 @@ ASCII-only, since it is used as the actual folder name.
 Similar to (1) this is to accomodate i18n-friendly names for page. While
 keeping storage filename ASCII.
 
+
+## Pipeline
+
+![Build Pipeline](./docs/assets/kalmia-pipeline.jpg)
+
+## Limitations
+
 ## Requirements
 
 - Go >= 1.22
