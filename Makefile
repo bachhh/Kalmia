@@ -22,6 +22,9 @@ else
 	done
 endif
 
+lint:
+	golangci-lint run --exclude-dirs-use-default=false --timeout=3m ./...
+
 # Linux builds
 build-linux-amd64:
 	GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -o dist/$(APP_NAME)_$(APP_VERSION)_linux_amd64 main.go
