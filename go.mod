@@ -23,7 +23,7 @@ require (
 	golang.org/x/crypto v0.36.0
 	golang.org/x/mod v0.21.0
 	golang.org/x/net v0.38.0
-	golang.org/x/oauth2 v0.22.0
+	golang.org/x/oauth2 v0.27.0
 	golang.org/x/text v0.23.0
 	gorm.io/driver/postgres v1.5.9
 	gorm.io/gorm v1.25.11
