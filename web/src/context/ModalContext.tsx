@@ -2,7 +2,8 @@ import React, { createContext, ReactNode, useState } from "react";
 
 export interface ModalItem {
   id: number;
-  name?: string /* Documentation || Page group */;
+  name?: string /* Documentation || PageGroup */;
+  label?: string /* for PageGroup */;
   title?: string /* For Page */;
   version?: string;
   username?: string;
@@ -19,6 +20,7 @@ export interface ModalContextType {
   createPageGroupModal: boolean;
   createPageModal: boolean;
   editModal: boolean;
+  editPageGroupModal: boolean;
   deleteModal: boolean;
   cloneDocumentModal: boolean;
   currentModalItem: ModalItem | null;
@@ -39,6 +41,7 @@ const defaultContext: ModalContextType = {
   createPageGroupModal: false,
   createPageModal: false,
   editModal: false,
+  editPageGroupModal: false,
   deleteModal: false,
   pageGroupListModal: false,
   cloneDocumentModal: false,
@@ -66,6 +69,7 @@ export const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
   const [createPageGroupModal, setCreatePageGroupModal] = useState(false);
   const [createPageModal, setCreatePageModal] = useState(false);
   const [editModal, setEditModal] = useState(false);
+  const [editPageGroupModal, setEditPageGroupModal] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
   const [cloneDocumentModal, setCloneDocumentModal] = useState(false);
   const [pageGroupListModal, SetPageGroupListModal] = useState(false);
@@ -91,6 +95,9 @@ export const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
         break;
       case "edit":
         setEditModal(true);
+        break;
+      case "editPageGroup":
+        setEditPageGroupModal(true);
         break;
       case "delete":
         setDeleteModal(true);
@@ -130,6 +137,9 @@ export const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
       case "edit":
         setEditModal(false);
         break;
+      case "editPageGroup":
+        setEditPageGroupModal(false);
+        break;
       case "delete":
         setDeleteModal(false);
         break;
@@ -160,6 +170,7 @@ export const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
         createPageGroupModal,
         createPageModal,
         editModal,
+        editPageGroupModal,
         deleteModal,
         cloneDocumentModal,
         currentModalItem,

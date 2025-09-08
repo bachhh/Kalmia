@@ -91,7 +91,7 @@ export default function Sidebar() {
 
   const smallestId = documentation.reduce(
     (min, doc) => (doc.id < min ? doc.id : min),
-    documentation[0]?.id
+    documentation[0]?.id,
   );
 
   const sidebarRef = useRef<HTMLDivElement | null>(null);
@@ -101,7 +101,7 @@ export default function Sidebar() {
 
   const handleClickOutside = (
     ref: React.RefObject<HTMLElement>,
-    setState: (state: boolean) => void
+    setState: (state: boolean) => void,
   ) => {
     return (event: MouseEvent) => {
       if (ref.current && !ref.current.contains(event.target as Node)) {
@@ -114,7 +114,7 @@ export default function Sidebar() {
     const handleSidebarClick = handleClickOutside(sidebarRef, setIsSidebarOpen);
     const handleDropdownClick = handleClickOutside(
       dropdownRef,
-      setNewDocumentDropdown
+      setNewDocumentDropdown,
     );
 
     document.addEventListener("mousedown", handleSidebarClick);

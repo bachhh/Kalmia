@@ -1,12 +1,12 @@
+import { useContext } from "react";
 import { Outlet } from "react-router-dom";
 
+import GitBookModal from "../components/GitBookModal/GitBookModal";
 import Loading from "../components/Loading/Loading";
 import Navbar from "../components/Navbar/Navbar";
 import PageGroupListModal from "../components/PageGroupListModal/PageGroupListModal";
 import Sidebar from "../components/Sidebar/Sidebar";
-import GitBookModal from "../components/GitBookModal/GitBookModal";
 import { ModalContext } from "../context/ModalContext";
-import { useContext } from "react";
 
 export default function DashboardPage() {
   const { gitBookModal } = useContext(ModalContext);

@@ -235,7 +235,7 @@ export function getClosestVersion(
       if (
         !closest ||
         timeDifference <
-        Math.abs(now.getTime() - new Date(closest.createdAt).getTime())
+          Math.abs(now.getTime() - new Date(closest.createdAt).getTime())
       ) {
         return {
           id: obj.id,
@@ -260,10 +260,10 @@ export function getVersion(
 
   return matchingObj
     ? {
-      id: matchingObj.id,
-      version: matchingObj.version,
-      createdAt: matchingObj.createdAt,
-    }
+        id: matchingObj.id,
+        version: matchingObj.version,
+        createdAt: matchingObj.createdAt,
+      }
     : null;
 }
 
@@ -604,4 +604,4 @@ export const b64ToString = (base64: string) => {
 
 export const capitalizeFirstLetter = (word: string) => {
   return word.charAt(0).toUpperCase() + word.slice(1);
-}
+};

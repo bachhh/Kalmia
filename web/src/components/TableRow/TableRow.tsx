@@ -174,7 +174,7 @@ export default memo(function TableRow({
                 icon="material-symbols:edit-outline"
                 className="w-6 h-6 text-yellow-500 dark:text-yellow-400"
                 onClick={() => {
-                  openModal("edit", obj);
+                  openModal("editPageGroup", obj);
                 }}
               />
             </button>
