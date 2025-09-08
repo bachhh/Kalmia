@@ -281,7 +281,7 @@ export const handleBacktickInput = (editor: BlockNoteEditor) => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         language,
-        code: "",
+        // code: "",
       },
     });
     return true;

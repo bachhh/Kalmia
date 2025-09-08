@@ -59,6 +59,7 @@ import Breadcrumb from "../Breadcrumb/Breadcrumb";
 import BuildTrigger from "../BuildTrigger/BuildTrigger";
 import EditDocumentModal from "../CreateDocumentModal/EditDocumentModal";
 import CreatePageGroup from "../CreatePageGroup/CreatePageGroup";
+import EditPageGroupModal from "../CreatePageGroupModal/EditPageGroupModal";
 import CreatePage from "../CreatePageModal/CreatePageModal";
 import DeleteModal from "../DeleteModal/DeleteModal";
 import TableRow from "../TableRow/TableRow";
@@ -82,6 +83,7 @@ export const Documentation = memo(function Documentation() {
     createPageModal,
     deleteModal,
     editModal,
+    editPageGroupModal,
     cloneDocumentModal,
     currentModalItem,
     pageSizeDropdown,
@@ -338,12 +340,7 @@ export const Documentation = memo(function Documentation() {
   };
 
   const handlePageGroupUpdate = useCallback(
-    async (
-      editTitle: string,
-      editLabel: string,
-      _version: string,
-      id: number,
-    ) => {
+    async (editTitle: string, editLabel: string, id: number) => {
       const updatePageGroupPayload = {
         id,
         name: editTitle,
@@ -366,12 +363,12 @@ export const Documentation = memo(function Documentation() {
               : item,
           ),
         );
-        closeModal("edit");
+        closeModal("editPageGroup");
         refreshData();
         toastMessage(t(result.data?.message), "success");
       }
     },
-    [selectedVersion, navigate, t, closeModal],
+    [navigate, t, closeModal],
   );
 
   const handleCreatePageGroup = async (title: string, label: string) => {
@@ -1084,9 +1081,9 @@ export const Documentation = memo(function Documentation() {
                     </motion.section>
                   )}
                   {/* Edit Component */}
-                  {editModal && (
-                    <EditDocumentModal
-                      title={currentModalItem?.name}
+                  {editPageGroupModal && (
+                    <EditPageGroupModal
+                      name={currentModalItem?.name}
                       label={currentModalItem?.label}
                       id={currentModalItem?.id ?? 0}
                       updateData={handlePageGroupUpdate}

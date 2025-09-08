@@ -1,5 +1,6 @@
+import { Icon } from "@iconify/react";
+
 import { UploadFormFieldData } from "../../types/doc";
-import { Icon } from "@iconify/react"
 
 export const UploadFormField: React.FC<UploadFormFieldData> = ({
   label,
@@ -8,9 +9,8 @@ export const UploadFormField: React.FC<UploadFormFieldData> = ({
   name,
   required = false,
   ref,
-  uploaded
+  uploaded,
 }) => {
-
   return (
     <div>
       <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -28,7 +28,12 @@ export const UploadFormField: React.FC<UploadFormFieldData> = ({
           required={required}
         />
 
-        {uploaded && <Icon icon="solar:check-circle-bold" className="w-6 h-6 text-green-400" />}
+        {uploaded && (
+          <Icon
+            icon="solar:check-circle-bold"
+            className="w-6 h-6 text-green-400"
+          />
+        )}
       </div>
     </div>
   );

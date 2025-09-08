@@ -1,21 +1,22 @@
+import { useCreateBlockNote } from "@blocknote/react";
 import { Icon } from "@iconify/react";
+import { t } from "i18next";
 import { useContext, useState } from "react";
-import { ModalContext } from "../../context/ModalContext";
+import { useNavigate } from "react-router-dom";
+
 import {
   createDocumentation,
   DocumentationPayload,
   getDocumentations,
   importGitBook,
 } from "../../api/Requests";
-import { t } from "i18next";
-import { customCSSInitial } from "../../utils/Utils";
-import { toastMessage } from "../../utils/Toast";
-import { useCreateBlockNote } from "@blocknote/react";
 import {
   createPage as createPageAPI,
   createPageGroup as createPageGroupAPI,
 } from "../../api/Requests";
-import { useNavigate } from "react-router-dom";
+import { ModalContext } from "../../context/ModalContext";
+import { toastMessage } from "../../utils/Toast";
+import { customCSSInitial } from "../../utils/Utils";
 
 export default function GitBookModal() {
   interface GitBookDetails {
@@ -62,13 +63,13 @@ export default function GitBookModal() {
   function processContent(
     obj: CurrentObj,
     docId: number | null = null,
-    parentId: number | null = null
+    parentId: number | null = null,
   ) {
     async function createPage(
       title: string,
       content: string,
       pageGroupId: number | null = null,
-      order: number
+      order: number,
     ) {
       const createPagePayload = {
         title,
@@ -85,7 +86,7 @@ export default function GitBookModal() {
     async function createPageGroup(
       title: string,
       parentId: number | null = null,
-      order: number
+      order: number,
     ): Promise<number> {
       const createPageGroupPayload = {
         name: title,
@@ -101,7 +102,7 @@ export default function GitBookModal() {
     async function traverseObject(
       currentObj: CurrentObj,
       currentParentId: number | null = null,
-      order: number = 1
+      order: number = 1,
     ) {
       for (const [key, value] of Object.entries(currentObj)) {
         if (typeof value === "object" && value !== null) {
@@ -109,7 +110,7 @@ export default function GitBookModal() {
             const newPageGroupId = await createPageGroup(
               key,
               currentParentId,
-              order++
+              order++,
             );
             await traverseObject(value, newPageGroupId, order);
           }
@@ -165,7 +166,7 @@ export default function GitBookModal() {
         bucketFavicon: "",
         bucketMetaImage: "",
         bucketNavImage: "",
-        bucketNavImageDark: ""
+        bucketNavImageDark: "",
       };
 
       const createResponse = await createDocumentation(payload);

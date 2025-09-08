@@ -20,6 +20,7 @@ import {
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useCallback, useContext, useEffect, useState } from "react";
+import { ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -43,7 +44,6 @@ import {
   insertAlert,
   insertCode,
 } from "./EditorCustomTools";
-import { ChangeEvent } from "react";
 
 const schema = BlockNoteSchema.create({
   blockSpecs: {
