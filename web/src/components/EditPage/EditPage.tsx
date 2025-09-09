@@ -389,6 +389,7 @@ export default function EditPage() {
       return;
     }
 
+    // TODO(bach): consider doing this at Backend / RsPress layer
     const removeBoldFromHeading = (node: object): void => {
       if (Array.isArray(node.content)) {
         node.content.forEach((item) => {
