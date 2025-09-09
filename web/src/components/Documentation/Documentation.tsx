@@ -294,7 +294,7 @@ export const Documentation = memo(function Documentation() {
     }
   };
 
-  const handleUpdate = async (
+  const handleCloneDocument = async (
     _editTitle: string,
     version: string,
     _id: number, // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -1094,7 +1094,7 @@ export const Documentation = memo(function Documentation() {
                   {cloneDocumentModal && (
                     <EditDocumentModal
                       id={documentData[0]?.id}
-                      updateData={handleUpdate}
+                      updateData={handleCloneDocument}
                     />
                   )}
 
