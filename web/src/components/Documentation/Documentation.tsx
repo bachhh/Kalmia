@@ -1083,8 +1083,8 @@ export const Documentation = memo(function Documentation() {
                   {/* Edit Component */}
                   {editPageGroupModal && (
                     <EditPageGroupModal
-                      name={currentModalItem?.name}
-                      label={currentModalItem?.label}
+                      name={currentModalItem?.name ?? ""}
+                      label={currentModalItem?.label ?? ""}
                       id={currentModalItem?.id ?? 0}
                       updateData={handlePageGroupUpdate}
                     />
