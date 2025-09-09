@@ -82,7 +82,6 @@ export const Documentation = memo(function Documentation() {
     createPageGroupModal,
     createPageModal,
     deleteModal,
-    editModal,
     editPageGroupModal,
     cloneDocumentModal,
     currentModalItem,
