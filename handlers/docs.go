@@ -89,6 +89,7 @@ func CreateDocumentation(service *services.ServiceRegistry, w http.ResponseWrite
 		BucketMetaImage    string `json:"bucketMetaImage"`
 		BucketNavImage     string `json:"bucketNavImage"`
 		BucketNavImageDark string `json:"bucketNavImageDark"`
+		TokenSecret        string `json:"tokenSecret"`
 	}
 
 	req, err := ValidateRequest[Request](w, r)
@@ -123,6 +124,7 @@ func CreateDocumentation(service *services.ServiceRegistry, w http.ResponseWrite
 		GitUser:          req.GitUser,
 		GitPassword:      req.GitPassword,
 		GitEmail:         req.GitEmail,
+		TokenSecret:      req.TokenSecret,
 	}
 
 	err = service.DocService.CreateDocumentation(documentation, user, map[string]string{
@@ -139,7 +141,7 @@ func CreateDocumentation(service *services.ServiceRegistry, w http.ResponseWrite
 	SendJSONResponse(http.StatusOK, w, map[string]string{"status": "success", "message": "documentation_created", "id": fmt.Sprint(documentation.ID)})
 }
 
-func EditDocumentation(services *services.ServiceRegistry, w http.ResponseWriter, r *http.Request) {
+func EditDocumentation(srv *services.ServiceRegistry, w http.ResponseWriter, r *http.Request) {
 	type Request struct {
 		ID               uint   `json:"id" validate:"required"`
 		Name             string `json:"name" validate:"required"`
@@ -169,6 +171,7 @@ func EditDocumentation(services *services.ServiceRegistry, w http.ResponseWriter
 		BucketMetaImage    string `json:"bucketMetaImage"`
 		BucketNavImage     string `json:"bucketNavImage"`
 		BucketNavImageDark string `json:"bucketNavImageDark"`
+		TokenSecret        string `json:"tokenSecret"`
 	}
 
 	req, err := ValidateRequest[Request](w, r)
@@ -182,43 +185,46 @@ func EditDocumentation(services *services.ServiceRegistry, w http.ResponseWriter
 		return
 	}
 
-	user, err := services.AuthService.GetUserFromToken(token)
+	user, err := srv.AuthService.GetUserFromToken(token)
 	if err != nil {
 		SendJSONResponse(http.StatusUnauthorized, w, map[string]string{"status": "error", "message": "invalid_request"})
 		return
 	}
 
-	err = services.DocService.EditDocumentation(user,
-		req.ID,
-		req.Name,
-		req.Description,
-		req.Version,
-		req.Favicon,
-		req.MetaImage,
-		req.NavImage,
-		req.NavImageDark,
-		req.CustomCSS,
-		req.FooterLabelLinks,
-		req.MoreLabelLinks,
-		req.CopyrightText,
-		req.URL,
-		req.OrganizationName,
-		req.ProjectName,
-		req.BaseURL,
-		req.LanderDetails,
-		req.RequireAuth,
-		req.GitRepo,
-		req.GitBranch,
-		req.GitUser,
-		req.GitPassword,
-		req.GitEmail,
-		map[string]string{
-			"favicon":      req.BucketFavicon,
-			"metaImage":    req.BucketMetaImage,
-			"navImage":     req.BucketNavImage,
-			"navImageDark": req.BucketNavImageDark,
-		},
-	)
+	err = srv.DocService.EditDocumentation(
+		services.EditDocumentationParams{
+			User:             user,
+			ID:               req.ID,
+			Name:             req.Name,
+			Description:      req.Description,
+			Version:          req.Version,
+			URL:              req.URL,
+			BaseURL:          req.BaseURL,
+			OrganizationName: req.OrganizationName,
+			ProjectName:      req.ProjectName,
+			RequireAuth:      req.RequireAuth,
+			LanderDetails:    req.LanderDetails,
+			CopyrightText:    req.CopyrightText,
+			GitRepo:          req.GitRepo,
+			GitBranch:        req.GitBranch,
+			GitUser:          req.GitUser,
+			GitPassword:      req.GitPassword,
+			GitEmail:         req.GitEmail,
+			Favicon:          req.Favicon,
+			MetaImage:        req.MetaImage,
+			NavImage:         req.NavImage,
+			NavImageDark:     req.NavImageDark,
+			CustomCSS:        req.CustomCSS,
+			FooterLabelLinks: req.FooterLabelLinks,
+			MoreLabelLinks:   req.MoreLabelLinks,
+			BucketUploadedFiles: map[string]string{
+				"favicon":      req.BucketFavicon,
+				"metaImage":    req.BucketMetaImage,
+				"navImage":     req.BucketNavImage,
+				"navImageDark": req.BucketNavImageDark,
+			},
+			TokenSecret: req.TokenSecret,
+		})
 	if err != nil {
 		SendJSONResponse(http.StatusInternalServerError, w, map[string]string{"status": "error", "message": err.Error()})
 		return

@@ -345,75 +345,78 @@ func (service *DocService) CreateDocumentation(documentation *models.Documentati
 	return nil
 }
 
-func (service *DocService) EditDocumentation(
-	user models.User,
-	id uint,
-	name,
-	description,
-	version,
-	favicon,
-	metaImage,
-	navImage,
-	navImageDark,
-	customCSS,
-	footerLabelLinks,
-	moreLabelLinks,
-	copyrightText,
-	url,
-	organizationName,
-	projectName,
-	baseURL,
-	landerDetails string,
-	requireAuth bool,
-	gitRepo string,
-	gitBranch string,
-	gitUser string,
-	gitPassword string,
-	gitEmail string,
+// EditDocumentationParams holds all the arguments for the EditDocumentation function.
+type EditDocumentationParams struct {
+	User                models.User
+	ID                  uint
+	Name                string
+	Description         string
+	Version             string
+	URL                 string
+	BaseURL             string
+	OrganizationName    string
+	ProjectName         string
+	RequireAuth         bool
+	LanderDetails       string
+	CopyrightText       string
+	GitRepo             string
+	GitBranch           string
+	GitUser             string
+	GitPassword         string
+	GitEmail            string
+	Favicon             string
+	MetaImage           string
+	NavImage            string
+	NavImageDark        string
+	CustomCSS           string
+	FooterLabelLinks    string
+	MoreLabelLinks      string
+	BucketUploadedFiles map[string]string
+	TokenSecret         string
+}
 
-	bucketUploadedFiles map[string]string,
-) error {
+func (service *DocService) EditDocumentation(params EditDocumentationParams) error {
 	tx := service.DB.Begin()
-	if !utils.IsBaseURLValid(baseURL) {
+	if !utils.IsBaseURLValid(params.BaseURL) {
 		return fmt.Errorf("invalid_base_url")
 	}
 
 	updateDoc := func(doc *models.Documentation, isTarget bool) error {
-		doc.LastEditorID = &user.ID
-		doc.Name = name
-		doc.Description = description
-		doc.URL = url
-		doc.OrganizationName = organizationName
-		doc.LanderDetails = landerDetails
-		doc.ProjectName = projectName
-		doc.BaseURL = baseURL
-		doc.Favicon = favicon
-		doc.MetaImage = metaImage
-		doc.NavImage = navImage
-		doc.NavImageDark = navImageDark
-		doc.CustomCSS = customCSS
-		doc.FooterLabelLinks = footerLabelLinks
-		doc.MoreLabelLinks = moreLabelLinks
-		doc.CopyrightText = copyrightText
-		doc.RequireAuth = requireAuth
-		doc.GitRepo = gitRepo
-		doc.GitBranch = gitBranch
-		doc.GitUser = gitUser
-		doc.GitPassword = gitPassword
-		doc.GitEmail = gitEmail
-		if isTarget && version != "" {
-			doc.Version = version
+		doc.LastEditorID = &params.User.ID
+		doc.Name = params.Name
+		doc.Description = params.Description
+		doc.URL = params.URL
+		doc.OrganizationName = params.OrganizationName
+		doc.LanderDetails = params.LanderDetails
+		doc.ProjectName = params.ProjectName
+		doc.BaseURL = params.BaseURL
+		doc.Favicon = params.Favicon
+		doc.MetaImage = params.MetaImage
+		doc.NavImage = params.NavImage
+		doc.NavImageDark = params.NavImageDark
+		doc.CustomCSS = params.CustomCSS
+		doc.FooterLabelLinks = params.FooterLabelLinks
+		doc.MoreLabelLinks = params.MoreLabelLinks
+		doc.CopyrightText = params.CopyrightText
+		doc.RequireAuth = params.RequireAuth
+		doc.GitRepo = params.GitRepo
+		doc.GitBranch = params.GitBranch
+		doc.GitUser = params.GitUser
+		doc.GitPassword = params.GitPassword
+		doc.GitEmail = params.GitEmail
+		if isTarget && params.Version != "" {
+			doc.Version = params.Version
 		}
 
 		alreadyEditor := false
 		for _, editor := range doc.Editors {
-			if editor.ID == user.ID {
+			if editor.ID == params.User.ID {
 				alreadyEditor = true
 				break
 			}
 		}
 		if !alreadyEditor {
-			doc.Editors = append(doc.Editors, user)
+			doc.Editors = append(doc.Editors, params.User)
 		}
 
 		if err := tx.Save(doc).Error; err != nil {
@@ -422,7 +425,7 @@ func (service *DocService) EditDocumentation(
 		return nil
 	}
 
-	docPath := utils.GetDocPathByID(id, config.ParsedConfig)
+	docPath := utils.GetDocPathByID(params.ID, config.ParsedConfig)
 	docPublicAssetPath := filepath.Join(docPath, "public")
 
 	sess, err := session.NewSession(&aws.Config{
@@ -437,7 +440,7 @@ func (service *DocService) EditDocumentation(
 
 	downloader := s3manager.NewDownloader(sess)
 
-	for key, bucketFileName := range bucketUploadedFiles {
+	for key, bucketFileName := range params.BucketUploadedFiles {
 		if len(bucketFileName) == 0 {
 			continue
 		}
@@ -488,13 +491,13 @@ func (service *DocService) EditDocumentation(
 
 		switch key {
 		case "favicon":
-			favicon = fmt.Sprintf("/favicon.%s", bucketFileExtension)
+			params.Favicon = fmt.Sprintf("/favicon.%s", bucketFileExtension)
 		case "metaImage":
-			metaImage = fmt.Sprintf("/metaImage.%s", bucketFileExtension)
+			params.MetaImage = fmt.Sprintf("/metaImage.%s", bucketFileExtension)
 		case "navImage":
-			navImage = fmt.Sprintf("/navImage.%s", bucketFileExtension)
+			params.NavImage = fmt.Sprintf("/navImage.%s", bucketFileExtension)
 		case "navImageDark":
-			navImageDark = fmt.Sprintf("/navImageDark.%s", bucketFileExtension)
+			params.NavImageDark = fmt.Sprintf("/navImageDark.%s", bucketFileExtension)
 		default:
 			return fmt.Errorf("invalid_key_value_for_asset")
 		}
@@ -502,7 +505,7 @@ func (service *DocService) EditDocumentation(
 	}
 
 	var targetDoc models.Documentation
-	if err := tx.Preload("Editors").First(&targetDoc, id).Error; err != nil {
+	if err := tx.Preload("Editors").First(&targetDoc, params.ID).Error; err != nil {
 		tx.Rollback()
 		return fmt.Errorf("documentation_not_found")
 	}
@@ -557,7 +560,7 @@ func (service *DocService) EditDocumentation(
 		return fmt.Errorf("failed_to_commit_changes")
 	}
 
-	rootID := id
+	rootID := params.ID
 	for {
 		var doc models.Documentation
 		if err := service.DB.First(&doc, rootID).Error; err != nil {
