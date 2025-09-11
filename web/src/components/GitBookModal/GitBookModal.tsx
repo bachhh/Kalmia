@@ -167,6 +167,7 @@ export default function GitBookModal() {
         bucketMetaImage: "",
         bucketNavImage: "",
         bucketNavImageDark: "",
+        tokenSecret: "",
       };
 
       const createResponse = await createDocumentation(payload);

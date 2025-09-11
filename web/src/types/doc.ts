@@ -174,6 +174,7 @@ export interface FormData {
   gitEmail: string | undefined;
   gitPassword: string | undefined;
   gitBranch: string | undefined;
+  tokenSecret: string;
 }
 
 export function isPage(item: PageOrGroup): item is Page {
