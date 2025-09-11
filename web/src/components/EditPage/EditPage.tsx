@@ -23,6 +23,7 @@ import React, { useCallback, useContext, useEffect, useState } from "react";
 import { ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { HeadingBlock, Block } from "../Types/BlockNoteTypes";
 
 import {
   deletePage,
@@ -390,9 +391,9 @@ export default function EditPage() {
     }
 
     // TODO(bach): consider doing this at Backend / RsPress layer
-    const removeBoldFromHeading = (node: object): void => {
-      if (Array.isArray(node.content)) {
-        node.content.forEach((item) => {
+    const removeBoldFromHeading = (block: HeadingBlock): void => {
+      if (Array.isArray(block.content)) {
+        block.content.forEach((item) => {
           if (item.type === "text" && item.styles?.bold) {
             delete item.styles.bold;
           }
@@ -404,7 +405,6 @@ export default function EditPage() {
       if (Array.isArray(block.content)) {
         block.content.forEach((node) => {
           if (node.type === "text" && typeof node.text === "string") {
-            // console.log(node);
             node.text = node.text.replace(/<</g, "");
           }
         });
@@ -417,27 +417,25 @@ export default function EditPage() {
       const fileContent = event.target?.result as string;
 
       try {
-        const parsedContent =
-          await editor.tryParseMarkdownToBlocks(fileContent);
+        const blocks = await editor.tryParseMarkdownToBlocks(fileContent);
 
-        for (const content of parsedContent) {
-          console.log(JSON.stringify(content));
-          if (content.type === "heading") {
-            removeBoldFromHeading(content);
+        for (const block of blocks) {
+          if (block.type === "heading") {
+            removeBoldFromHeading(block);
           }
-          removeDoubleAngleBrackets(content);
-          if (content.props) {
-            if ("url" in content.props) {
-              const url = content.props.url;
+          removeDoubleAngleBrackets(block);
+          if (block.props) {
+            if ("url" in block.props) {
+              const url = block.props.url;
               if (url.endsWith(".mp4")) {
-                content.type = "video";
+                block.type = "video";
               } else if (url.endsWith(".mp3")) {
-                content.type = "audio";
+                block.type = "audio";
               }
             }
           }
         }
-        setEditorContent(parsedContent);
+        setEditorContent(blocks);
       } catch (err) {
         console.error("Error parsing Markdown:", err);
       }
