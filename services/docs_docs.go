@@ -52,7 +52,7 @@ func (service *DocService) GetDocumentations() ([]models.Documentation, error) {
 	}).Select("ID", "Name", "Description", "CreatedAt", "UpdatedAt", "AuthorID", "Version", "ClonedFrom",
 		"LastEditorID", "Favicon", "MetaImage", "NavImage", "NavImageDark", "CustomCSS", "FooterLabelLinks", "MoreLabelLinks",
 		"URL", "OrganizationName", "LanderDetails", "ProjectName", "BaseURL", "RequireAuth",
-		"GitRepo", "GitEmail", "GitUser", "GitPassword", "GitBranch").
+		"GitRepo", "GitEmail", "GitUser", "GitPassword", "GitBranch", "TokenSecret").
 		Find(&documentations).Error; err != nil {
 		return nil, fmt.Errorf("failed_to_get_documentations")
 	}
@@ -99,7 +99,7 @@ func (service *DocService) GetDocumentation(id uint) (models.Documentation, erro
 	}).Where("id = ?", id).Select("ID", "Name", "Description", "CreatedAt", "UpdatedAt", "AuthorID", "Version", "LastEditorID", "Favicon",
 		"MetaImage", "NavImage", "NavImageDark", "CustomCSS", "FooterLabelLinks", "MoreLabelLinks", "CopyrightText",
 		"BaseURL", "URL", "OrganizationName", "LanderDetails", "ProjectName", "ClonedFrom", "RequireAuth",
-		"GitRepo", "GitEmail", "GitUser", "GitPassword", "GitBranch").
+		"GitRepo", "GitEmail", "GitUser", "GitPassword", "GitBranch", "TokenSecret").
 		Find(&documentation).Error; err != nil {
 		return models.Documentation{}, fmt.Errorf("failed_to_get_documentation")
 	}
