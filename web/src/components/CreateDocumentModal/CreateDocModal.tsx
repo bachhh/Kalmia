@@ -491,6 +491,7 @@ export default function CreateDocModal() {
       bucketMetaImage: uploadedFiles.metaImage.name || "",
       bucketNavImage: uploadedFiles.navImage.name || "",
       bucketNavImageDark: uploadedFiles.navImageDark.name || "",
+      tokenSecret: formData.tokenSecret || "",
     };
     let result;
 
@@ -763,6 +764,7 @@ export default function CreateDocModal() {
                   />
                   <FormField
                     label={t("token_secret")}
+                    placeholder=""
                     value={formData?.tokenSecret}
                     onChange={handleChange}
                     name="tokenSecret"

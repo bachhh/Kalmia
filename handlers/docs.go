@@ -190,6 +190,7 @@ func EditDocumentation(srv *services.ServiceRegistry, w http.ResponseWriter, r *
 		SendJSONResponse(http.StatusUnauthorized, w, map[string]string{"status": "error", "message": "invalid_request"})
 		return
 	}
+	fmt.Printf("%+v\n", req.TokenSecret)
 
 	err = srv.DocService.EditDocumentation(
 		services.EditDocumentationParams{
