@@ -23,7 +23,6 @@ import React, { useCallback, useContext, useEffect, useState } from "react";
 import { ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { HeadingBlock, Block } from "../Types/BlockNoteTypes";
 
 import {
   deletePage,
@@ -38,6 +37,7 @@ import { handleError, hasPermission } from "../../utils/Common";
 import { toastMessage } from "../../utils/Toast";
 import Breadcrumb from "../Breadcrumb/Breadcrumb";
 import DeleteModal from "../DeleteModal/DeleteModal";
+import { Block, HeadingBlock } from "../Types/BlockNoteTypes";
 import {
   Alert,
   CodeBlock,
