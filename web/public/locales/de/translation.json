@@ -1,4 +1,5 @@
 {
+        "token_secret": "Token-Geheimnis",
         "this_doc_requires_auth": "Sie müssen sich anmelden, um diese Dokumentation anzuzeigen",
         "sign_in_to_your_account": "Melden Sie sich bei Ihrem Konto an",
         "username": "Benutzername",

@@ -161,6 +161,7 @@ export default function CreateDocModal() {
     gitEmail: "",
     gitPassword: "",
     gitBranch: "",
+    tokenSecret: "",
   });
 
   const [moreField, setMoreField] = useState<MoreLabelLinks[]>([
@@ -286,6 +287,7 @@ export default function CreateDocModal() {
         gitEmail: "",
         gitPassword: "",
         gitBranch: "",
+        tokenSecret: "",
       });
       SetIsAuthenticationToggleOn(false);
       setSocialPlatformField([{ icon: "", link: "" }]);
@@ -457,6 +459,7 @@ export default function CreateDocModal() {
           gitEmail: formData.gitEmail || "",
           gitPassword: formData.gitPassword || "",
           gitBranch: formData.gitBranch || "",
+          tokenSecret: formData.tokenSecret || "",
         }
       : {};
 
@@ -689,7 +692,7 @@ export default function CreateDocModal() {
                   </div>
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-3">
+                <div className="grid gap-4 sm:grid-cols-2">
                   {/* <FormField */}
                   {/*   label={t("favicon")} */}
                   {/*   placeholder={t("favicon_placeholder")} */}
@@ -730,7 +733,16 @@ export default function CreateDocModal() {
                     name="navImageDark"
                     uploaded={uploadedFiles.navImageDark.uploaded}
                   />
+                </div>
 
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <UploadFormField
+                    label={t("social_card_image")}
+                    placeholder={t("social_card_image_palceholder")}
+                    onChange={handleUploadAssetFile}
+                    name="metaImage"
+                    uploaded={uploadedFiles.metaImage.uploaded}
+                  />
                   <UploadFormField
                     label={t("navbar_icon")}
                     placeholder={t("navbar_icon_placeholder")}
@@ -749,13 +761,12 @@ export default function CreateDocModal() {
                     name="copyrightText"
                     required={true}
                   />
-
-                  <UploadFormField
-                    label={t("social_card_image")}
-                    placeholder={t("social_card_image_palceholder")}
-                    onChange={handleUploadAssetFile}
-                    name="metaImage"
-                    uploaded={uploadedFiles.metaImage.uploaded}
+                  <FormField
+                    label={t("token_secret")}
+                    value={formData?.tokenSecret}
+                    onChange={handleChange}
+                    name="tokenSecret"
+                    required={false}
                   />
                 </div>
 
