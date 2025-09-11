@@ -1,4 +1,5 @@
 {
+    "token_secret": "टोकन रहस्य",
     "sign_in_to_your_account": "अपने खाते में साइन इन करें",
     "username": "उपयोगकर्ता नाम",
     "password": "पासवर्ड",

@@ -1,4 +1,5 @@
 {
+        "token_secret": "權杖密鑰",
         "this_doc_requires_auth": "您需要登入才能檢視此文件",
         "sign_in_to_your_account": "登入您的帳號",
         "username": "使用者名稱",

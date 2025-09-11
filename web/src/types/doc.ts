@@ -109,6 +109,7 @@ export interface Documentation {
   gitEmail: string;
   gitPassword: string;
   gitBranch: string;
+  tokenSecret: string;
 }
 
 export interface FormField {

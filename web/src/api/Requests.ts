@@ -51,6 +51,8 @@ export interface DocumentationPayload {
   bucketMetaImage: string;
   bucketNavImage: string;
   bucketNavImageDark: string;
+  // token for auth
+  tokenSecret: string;
 }
 
 interface CreateVersionPayload {
