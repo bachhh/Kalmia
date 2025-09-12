@@ -9,6 +9,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+//nolint:gochecknoglobals
 var validate *validator.Validate
 
 func init() {
@@ -35,6 +36,7 @@ func ValidateRequest[T any](w http.ResponseWriter, r *http.Request) (*T, error) 
 func SendJSONResponse(httpCode int, w http.ResponseWriter, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(httpCode)
+	//nolint:errcheck
 	json.NewEncoder(w).Encode(data)
 }
 
@@ -48,3 +50,10 @@ func GetTokenFromHeader(r *http.Request) (string, error) {
 
 	return token, nil
 }
+
+// func GetTokenFromParam(r *http.Request) (string, error) {
+// }
+
+const (
+	DocTokenCookieName = `docToken`
+)

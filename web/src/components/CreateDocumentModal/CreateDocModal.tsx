@@ -770,6 +770,7 @@ export default function CreateDocModal() {
                     name="tokenSecret"
                     required={false}
                   />
+                  {/*TODO: maybe have a tooltip to display whatever token we have*/}
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">

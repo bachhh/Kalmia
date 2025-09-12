@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"git.difuse.io/Difuse/kalmia/config"
 	"git.difuse.io/Difuse/kalmia/services"
@@ -133,6 +134,7 @@ func GetUser(authService *services.AuthService, w http.ResponseWriter, r *http.R
 	SendJSONResponse(http.StatusOK, w, user)
 }
 
+// aka Login
 func CreateJWT(authService *services.AuthService, w http.ResponseWriter, r *http.Request) {
 	type Request struct {
 		Username string `json:"username"`
@@ -152,6 +154,21 @@ func CreateJWT(authService *services.AuthService, w http.ResponseWriter, r *http
 
 	tokenDetails["status"] = "success"
 
+	// TODO: implement
+	docToken := "example"
+
+	expiration := time.Now().Add(7 * 24 * time.Hour) // TODO: set variable
+	cookie := http.Cookie{
+		Name:     DocTokenCookieName,
+		Domain:   "TODO",
+		Value:    docToken,
+		Expires:  expiration,
+		HttpOnly: true, // Recommended for security
+		Secure:   true,
+		Path:     "/", // TODO
+	}
+	http.SetCookie(w, &cookie)
+
 	SendJSONResponse(http.StatusOK, w, tokenDetails)
 }
 
@@ -168,6 +185,7 @@ func RefreshJWT(authService *services.AuthService, w http.ResponseWriter, r *htt
 		return
 	}
 
+	// TODO: refresh docToken
 	SendJSONResponse(http.StatusOK, w, map[string]string{"status": "success", "token": token})
 }
 

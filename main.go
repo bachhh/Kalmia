@@ -154,6 +154,7 @@ func main() {
 	os.Exit(0)
 }
 
+// TODO: add jwt doc validation middleware
 func createSPAHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path

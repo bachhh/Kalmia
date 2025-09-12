@@ -42,10 +42,14 @@ type GoogleOAuth struct {
 }
 
 type Config struct {
-	LogSubCmd      bool           `json:"logSubCmd"`
-	Environment    string         `json:"environment"`
-	Host           string         `json:"host"`
-	Port           int            `json:"port"`
+	LogSubCmd   bool   `json:"logSubCmd"`
+	Environment string `json:"environment"`
+
+	Host           string `json:"host"`
+	Port           int    `json:"port"`
+	Domain         string `json:"domain"`         // domain this app is serving from.
+	DocumentDomain string `json:"documentDomain"` // domain to serve document from, if empty set to domain
+
 	Database       string         `json:"database"`
 	LogLevel       string         `json:"logLevel"`
 	AssetStorage   string         `json:"assetStorage"`
@@ -60,6 +64,9 @@ type Config struct {
 	BodyLimitMb    int64          `json:"bodyLimitMb"`
 }
 
+// TODO: use local config
+//
+//nolint:gochecknoglobals
 var ParsedConfig *Config
 
 func ParseConfig(path string) *Config {
@@ -86,6 +93,7 @@ func ParseConfig(path string) *Config {
 		SetupLocalS3Storage()
 	}
 
+	// TODO: switch to viper and govalidate
 	// INFO: Adds the default max file size of 10
 	// Added for backwards compatibility
 	if ParsedConfig.MaxFileSize == 0 {
@@ -95,6 +103,12 @@ func ParseConfig(path string) *Config {
 	// sensible default for body limit
 	if ParsedConfig.BodyLimitMb == 0 {
 		ParsedConfig.BodyLimitMb = 50
+	}
+	if ParsedConfig.Domain == "" {
+		panic("missing domain config")
+	}
+	if ParsedConfig.DocumentDomain == "" {
+		ParsedConfig.DocumentDomain = ParsedConfig.Domain
 	}
 
 	return ParsedConfig
