@@ -139,7 +139,7 @@ func main() {
 	router.Use(rsPressMiddleware)
 
 	spaHandler := createSPAHandler()
-	router.PathPrefix("/").HandlerFunc(spaHandler)
+	router.PathPrefix("/doc-view/").HandlerFunc(spaHandler)
 
 	logger.Info("Starting server", zap.Int("port", cfg.Port))
 

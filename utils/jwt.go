@@ -19,7 +19,15 @@ type JWTData struct {
 	Permissions  []string          `json:"permissions"`
 }
 
-func GenerateJWTAccessToken(dbUserId uint, userId string, email string, photo string, isAdmin bool, permissions string) (string, int64, error) {
+func GenerateJWTAccessToken(
+	dbUserId uint,
+	userId string,
+	email string,
+	photo string,
+	isAdmin bool,
+	permissions string,
+	secretKey string,
+) (string, int64, error) {
 	permissionsSlice := []string{}
 
 	if permissions != "" {
@@ -57,12 +65,11 @@ func GenerateJWTAccessToken(dbUserId uint, userId string, email string, photo st
 	return token, expiry, err
 }
 
-func GetJWTExpirationTime(token string) (int64, error) {
+func GetJWTExpirationTime(token string, secretKey string) (int64, error) {
 	claims := &JWTData{}
 	_, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
 		return secretKey, nil
 	})
-
 	if err != nil {
 		return 0, err
 	}
@@ -70,12 +77,11 @@ func GetJWTExpirationTime(token string) (int64, error) {
 	return claims.ExpiresAt.Time.Unix(), nil
 }
 
-func ValidateJWT(token string) (*JWTData, error) {
+func ValidateJWT(token string, secretKey string) (*JWTData, error) {
 	claims := &JWTData{}
 	_, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
 		return secretKey, nil
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -83,8 +89,8 @@ func ValidateJWT(token string) (*JWTData, error) {
 	return claims, nil
 }
 
-func GetJWTUserId(token string) (string, error) {
-	claims, err := ValidateJWT(token)
+func GetJWTUserId(token string, secretKey string) (string, error) {
+	claims, err := ValidateJWT(token, secretKey)
 	if err != nil {
 		return "", err
 	}

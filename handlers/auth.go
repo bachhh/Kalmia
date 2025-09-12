@@ -20,6 +20,7 @@ import (
 )
 
 var (
+	//nolint:gochecknoglobals
 	githubOauthConfig    *oauth2.Config
 	microsoftOauthConfig *oauth2.Config
 	googleOAuthConfig    *oauth2.Config
@@ -154,13 +155,16 @@ func CreateJWT(authService *services.AuthService, w http.ResponseWriter, r *http
 
 	tokenDetails["status"] = "success"
 
-	// TODO: implement
-	docToken := "example"
+	docToken, err := authService.CreateDocumentToken(nil)
+	if err != nil {
+		SendJSONResponse(http.StatusInternalServerError, w, map[string]string{"status": "error", "message": err.Error()})
+		return
+	}
 
 	expiration := time.Now().Add(7 * 24 * time.Hour) // TODO: set variable
 	cookie := http.Cookie{
 		Name:     DocTokenCookieName,
-		Domain:   "TODO",
+		Domain:   config.ParsedConfig.Domain, // here this cookie should be set to the API's own domain
 		Value:    docToken,
 		Expires:  expiration,
 		HttpOnly: true, // Recommended for security
@@ -343,6 +347,7 @@ func MicrosoftCallback(aS *services.AuthService, w http.ResponseWriter, r *http.
 	}
 
 	client := microsoftOauthCfg.Client(context.Background(), token)
+	// TODO: get with context
 	resp, err := client.Get("https://graph.microsoft.com/v1.0/me")
 	if err != nil {
 		http.Error(w, "Failed to get user info: "+err.Error(), http.StatusInternalServerError)

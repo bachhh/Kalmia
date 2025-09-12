@@ -62,6 +62,15 @@ type Config struct {
 	MicrosoftOAuth MicrosoftOAuth `json:"microsoftOAuth"`
 	GoogleOAuth    GoogleOAuth    `json:"googleOAuth"`
 	BodyLimitMb    int64          `json:"bodyLimitMb"`
+
+	PathToSecretFile string `json:"PathToSecretFile"`
+	ParsedSecret     Secret `json:"-"`
+}
+
+// TODO: load secret from env
+
+type Secret struct {
+	JWTSecretKey string `json:"jwtSecretKey"`
 }
 
 // TODO: use local config
@@ -110,6 +119,21 @@ func ParseConfig(path string) *Config {
 	if ParsedConfig.DocumentDomain == "" {
 		ParsedConfig.DocumentDomain = ParsedConfig.Domain
 	}
+
+	if ParsedConfig.PathToSecretFile == "" {
+		panic("missing parsed secret")
+	}
+
+	f, err := os.Open(os.Getenv(ParsedConfig.PathToSecretFile))
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	s := Secret{}
+
+	// TODO load secret file from env
+	ParsedConfig.ParsedSecret = s
 
 	return ParsedConfig
 }

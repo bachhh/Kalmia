@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+var secretKey = "abcxyz"
+
 func TestGenerateJWTAccessToken(t *testing.T) {
 	dbUserId := uint(1)
 	userId := "testUser"
@@ -12,7 +14,7 @@ func TestGenerateJWTAccessToken(t *testing.T) {
 	photo := "photo.jpg"
 	isAdmin := true
 
-	token, expiry, err := GenerateJWTAccessToken(dbUserId, userId, email, photo, isAdmin, `["read", "write"]`)
+	token, expiry, err := GenerateJWTAccessToken(dbUserId, userId, email, photo, isAdmin, `["read", "write"]`, secretKey)
 	if err != nil {
 		t.Fatalf("GenerateJWTAccessToken returned an error: %v", err)
 	}
@@ -26,12 +28,12 @@ func TestGenerateJWTAccessToken(t *testing.T) {
 }
 
 func TestGetJWTExpirationTime(t *testing.T) {
-	token, _, err := GenerateJWTAccessToken(1, "testUser", "test@example.com", "photo.jpg", true, `["read", "write"]`)
+	token, _, err := GenerateJWTAccessToken(1, "testUser", "test@example.com", "photo.jpg", true, `["read", "write"]`, secretKey)
 	if err != nil {
 		t.Fatalf("GenerateJWTAccessToken returned an error: %v", err)
 	}
 
-	expiry, err := GetJWTExpirationTime(token)
+	expiry, err := GetJWTExpirationTime(token, secretKey)
 	if err != nil {
 		t.Fatalf("GetJWTExpirationTime returned an error: %v", err)
 	}
@@ -42,12 +44,12 @@ func TestGetJWTExpirationTime(t *testing.T) {
 }
 
 func TestValidateJWT(t *testing.T) {
-	token, _, err := GenerateJWTAccessToken(1, "testUser", "test@example.com", "photo.jpg", true, `["read", "write"]`)
+	token, _, err := GenerateJWTAccessToken(1, "testUser", "test@example.com", "photo.jpg", true, `["read", "write"]`, secretKey)
 	if err != nil {
 		t.Fatalf("GenerateJWTAccessToken returned an error: %v", err)
 	}
 
-	claims, err := ValidateJWT(token)
+	claims, err := ValidateJWT(token, secretKey)
 	if err != nil {
 		t.Fatalf("ValidateJWT returned an error: %v", err)
 	}
@@ -63,7 +65,7 @@ func TestValidateJWT(t *testing.T) {
 }
 
 func TestGetJWTUserId(t *testing.T) {
-	token, _, err := GenerateJWTAccessToken(1, "testUser", "test@example.com", "photo.jpg", true, `["read", "write"]`)
+	token, _, err := GenerateJWTAccessToken(1, "testUser", "test@example.com", "photo.jpg", true, `["read", "write"]`, secretKey)
 	if err != nil {
 		t.Fatalf("GenerateJWTAccessToken returned an error: %v", err)
 	}

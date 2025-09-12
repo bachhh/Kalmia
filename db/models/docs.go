@@ -105,3 +105,13 @@ func (s BuildTriggers) MarshalJSON() ([]byte, error) {
 	type TmpStruct BuildTriggers
 	return jsonx.Marshal(TmpStruct(s))
 }
+
+type DocumentToken struct {
+	ID    uint   `gorm:"primarykey" json:"id,omitempty"`
+	Token string `gorm:"index:,unique" json:"token,omitempty"`
+	// null value means the token is valid for access to documents
+	DocumentationID *uint     `json:"documentationId" gorm:"index:idx_document_id"`
+	Expiry          int64     `json:"expiry,omitempty"`
+	CreatedAt       time.Time `gorm:"autoCreateTime" json:"createdAt,omitempty"`
+	UpdatedAt       time.Time `gorm:"autoUpdateTime" json:"updatedAt,omitempty"`
+}
