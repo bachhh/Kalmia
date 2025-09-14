@@ -27,7 +27,6 @@ var adminFS embed.FS
 var startupWg sync.WaitGroup
 
 func main() {
-	cmd.AsciiArt()
 	cfgPath := cmd.ParseFlags()
 	cfg := config.ParseConfig(cfgPath)
 	logger.InitializeLogger(cfg.Environment, cfg.LogLevel, cfg.DataPath)
