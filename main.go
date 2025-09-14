@@ -38,7 +38,6 @@ func main() {
 	db.InitCache()
 
 	serviceRegistry := services.NewServiceRegistry(d, cfg.LogSubCmd, cfg.Secret)
-	fmt.Printf("%+v\n", cfg.Secret)
 	authSrvc := serviceRegistry.AuthService
 	docSrvc := serviceRegistry.DocService
 
