@@ -105,6 +105,9 @@ func main() {
 	docsRouter.HandleFunc("/documentations", func(w http.ResponseWriter, r *http.Request) { handlers.GetDocumentations(docSrvc, w, r) }).Methods("GET")
 	docsRouter.HandleFunc("/documentation", func(w http.ResponseWriter, r *http.Request) { handlers.GetDocumentation(docSrvc, w, r) }).Methods("POST")
 	docsRouter.HandleFunc("/documentation/create", func(w http.ResponseWriter, r *http.Request) { handlers.CreateDocumentation(serviceRegistry, w, r) }).Methods("POST")
+
+	docsRouter.HandleFunc("/documentation/{docID}/check_jwt", func(w http.ResponseWriter, r *http.Request) { handlers.CheckJWTToken(serviceRegistry, w, r) }).Methods("POST")
+
 	docsRouter.HandleFunc("/documentation/edit", func(w http.ResponseWriter, r *http.Request) { handlers.EditDocumentation(serviceRegistry, w, r) }).Methods("POST")
 	docsRouter.HandleFunc("/documentation/delete", func(w http.ResponseWriter, r *http.Request) { handlers.DeleteDocumentation(docSrvc, w, r) }).Methods("POST")
 	docsRouter.HandleFunc("/documentation/version", func(w http.ResponseWriter, r *http.Request) { handlers.CreateDocumentationVersion(docSrvc, w, r) }).Methods("POST")
@@ -129,7 +132,7 @@ func main() {
 	docsRouter.HandleFunc("/page-group/edit", func(w http.ResponseWriter, r *http.Request) { handlers.EditPageGroup(serviceRegistry, w, r) }).Methods("POST")
 	docsRouter.HandleFunc("/page-group/delete", func(w http.ResponseWriter, r *http.Request) { handlers.DeletePageGroup(docSrvc, w, r) }).Methods("POST")
 
-	rsPressMiddleware := middleware.RsPressMiddleware(docSrvc)
+	rsPressMiddleware := middleware.RsPressMiddleware(serviceRegistry)
 	router.Use(rsPressMiddleware)
 
 	spaHandler := createSPAHandler()
@@ -192,7 +195,11 @@ func createSPAHandler() http.HandlerFunc {
 				defer file.Close()
 			}
 
-			http.ServeContent(w, r, path, stat.ModTime(), file.(io.ReadSeeker))
+			if rs, ok := file.(io.ReadSeeker); ok {
+				http.ServeContent(w, r, path, stat.ModTime(), rs)
+			} else {
+				http.Error(w, "file is not seekable", http.StatusInternalServerError)
+			}
 		} else {
 			filePath := "web/build/" + path
 

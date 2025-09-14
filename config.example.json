@@ -1,12 +1,33 @@
 {
+  "cookieConfig": {
+    "domain": "example.com",
+    "path": "/",
+    "agedays": 7,
+    "secure": true,
+    "sameSite": "lax",
+    "httpOnly": true
+  },
   "security": {
     "corsConfig": {
-      "allowedOrigins": ["*"],
-      "allowedMethods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-      "allowedHeaders": ["Accept", "Authorization", "Content-Type", "X-CSRF-Token"],
+      "allowedOrigins": [
+        "*"
+      ],
+      "allowedMethods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "OPTIONS"
+      ],
+      "allowedHeaders": [
+        "Accept",
+        "Authorization",
+        "Content-Type",
+        "X-CSRF-Token"
+      ],
       "allowCredentials": true,
       "exposedHeaders": [],
-      "corsMaxAge": 24,
+      "corsMaxAge": 24
     }
   },
   "pathToSecret": "./secret.example.json",

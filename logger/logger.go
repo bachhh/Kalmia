@@ -10,13 +10,14 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+//nolint:gochecknoglobals
 var Logger *zap.Logger
 
 func InitializeLogger(env string, logLevel string, dataPath string) {
 	logsPath := filepath.Join(dataPath, "logs")
 	if _, err := os.Stat(logsPath); os.IsNotExist(err) {
 		if err = os.MkdirAll(logsPath, 0o755); err != nil {
-			panic(fmt.Errorf("failed to create log directory: %v", err))
+			panic(fmt.Errorf("failed to create log directory: %w", err))
 		}
 	}
 
@@ -61,7 +62,7 @@ func InitializeLogger(env string, logLevel string, dataPath string) {
 	var err error
 	Logger, err = config.Build(zap.AddCallerSkip(1), zap.AddStacktrace(zapcore.ErrorLevel))
 	if err != nil {
-		panic(fmt.Errorf("failed to initialize logger: %v", err))
+		panic(fmt.Errorf("failed to initialize logger: %w", err))
 	}
 }
 

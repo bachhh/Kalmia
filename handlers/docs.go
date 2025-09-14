@@ -2,15 +2,19 @@ package handlers
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"git.difuse.io/Difuse/kalmia/db/models"
 	"git.difuse.io/Difuse/kalmia/logger"
 	"git.difuse.io/Difuse/kalmia/services"
+	"git.difuse.io/Difuse/kalmia/utils"
+	"github.com/gorilla/mux"
 )
 
 func GetDocumentations(service *services.DocService, w http.ResponseWriter, r *http.Request) {
@@ -141,6 +145,46 @@ func CreateDocumentation(service *services.ServiceRegistry, w http.ResponseWrite
 	SendJSONResponse(http.StatusOK, w, map[string]string{"status": "success", "message": "documentation_created", "id": fmt.Sprint(documentation.ID)})
 }
 
+// special function for checking jwt token
+func CheckJWTToken(srv *services.ServiceRegistry, w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	docIDStr, ok := vars["docID"]
+	if !ok {
+		SendJSONResponse(http.StatusBadRequest, w, map[string]string{"status": "error", "message": "doc_id not found"})
+		return
+	}
+
+	docID, err := strconv.Atoi(docIDStr)
+	if err != nil {
+		SendJSONResponse(http.StatusBadRequest, w, map[string]string{"status": "error", "message": "cannot parse doc_id" + docIDStr + "as uint"})
+		return
+	}
+
+	jwtToken, err := io.ReadAll(r.Body)
+	if err != nil {
+		SendJSONResponse(http.StatusInternalServerError, w, map[string]string{"status": "error", "message": err.Error()})
+		return
+	}
+
+	doc, err := srv.DocService.GetDocumentation(uint(docID))
+	if err != nil {
+		SendJSONResponse(http.StatusInternalServerError, w, map[string]string{"status": "error", "message": err.Error()})
+		return
+	}
+
+	claims, err := utils.ValidateDocJWT(string(jwtToken), doc.TokenSecret)
+	if err != nil {
+		SendJSONResponse(http.StatusInternalServerError, w, map[string]string{"status": "error", "message": err.Error()})
+		return
+	}
+	if claims.ExpiresAt.Time.After(time.Now()) {
+		SendJSONResponse(http.StatusUnauthorized, w, map[string]string{"status": "error", "message": "expired JWT token"})
+		return
+	}
+
+	SendJSONResponse(http.StatusInternalServerError, w, map[string]string{"status": "success", "message": "none"})
+}
+
 func EditDocumentation(srv *services.ServiceRegistry, w http.ResponseWriter, r *http.Request) {
 	type Request struct {
 		ID               uint   `json:"id" validate:"required"`
@@ -171,7 +215,8 @@ func EditDocumentation(srv *services.ServiceRegistry, w http.ResponseWriter, r *
 		BucketMetaImage    string `json:"bucketMetaImage"`
 		BucketNavImage     string `json:"bucketNavImage"`
 		BucketNavImageDark string `json:"bucketNavImageDark"`
-		TokenSecret        string `json:"tokenSecret"`
+
+		TokenSecret string `json:"tokenSecret"`
 	}
 
 	req, err := ValidateRequest[Request](w, r)
@@ -564,16 +609,17 @@ func DeletePageGroup(service *services.DocService, w http.ResponseWriter, r *htt
 func GetRsPress(service *services.DocService, w http.ResponseWriter, r *http.Request) {
 	urlPath := r.URL.Path
 
-	_, docPath, baseURL, _, err := service.GetRsPress(urlPath)
-	if err != nil {
+	// _, docPath, baseURL, _, _, err := service.GetRsPressFromURL(urlPath)
+	docData, found, err := service.GetRsPressFromURL(urlPath)
+	if err != nil || !found {
 		http.Redirect(w, r, "/admin/", http.StatusTemporaryRedirect)
 		return
 	}
 
-	fullPath := filepath.Join(docPath, strings.TrimPrefix(urlPath, baseURL))
+	fullPath := filepath.Join(docData.Path, strings.TrimPrefix(urlPath, docData.BaseURL))
 
 	if _, err := os.Stat(fullPath); os.IsNotExist(err) {
-		fullPath = filepath.Join(docPath, "index.html")
+		fullPath = filepath.Join(docData.Path, "index.html")
 	}
 
 	http.ServeFile(w, r, fullPath)

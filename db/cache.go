@@ -8,9 +8,8 @@ import (
 	"git.difuse.io/Difuse/kalmia/logger"
 )
 
-var (
-	Cache *sync.Map
-)
+//nolint:gochecknoglobals
+var Cache *sync.Map
 
 type CacheEntry struct {
 	Data        []byte
@@ -32,15 +31,19 @@ func SetKey(key []byte, value []byte, contentType string) error {
 
 func GetValue(key []byte) (CacheEntry, error) {
 	if entry, ok := Cache.Load(string(key)); ok {
-		return entry.(CacheEntry), nil
+		if cacheEntry, ok := entry.(CacheEntry); ok {
+			return cacheEntry, nil
+		}
 	}
 	return CacheEntry{}, ErrKeyNotFound
 }
 
 func ClearCacheByPrefix(prefix string) error {
 	Cache.Range(func(k, v interface{}) bool {
-		if strings.HasPrefix(k.(string), prefix) {
-			Cache.Delete(k)
+		if kStr, ok := k.(string); ok {
+			if strings.HasPrefix(kStr, prefix) {
+				Cache.Delete(k)
+			}
 		}
 		return true
 	})
@@ -50,9 +53,12 @@ func ClearCacheByPrefix(prefix string) error {
 func GetCacheByPrefix(prefix string) (map[string]string, error) {
 	result := make(map[string]string)
 	Cache.Range(func(k, v interface{}) bool {
-		if strings.HasPrefix(k.(string), prefix) {
-			entry := v.(CacheEntry)
-			result[k.(string)] = string(entry.Data)
+		if kStr, ok := k.(string); ok {
+			if strings.HasPrefix(kStr, prefix) {
+				if entry, ok := v.(CacheEntry); ok {
+					result[kStr] = string(entry.Data)
+				}
+			}
 		}
 		return true
 	})

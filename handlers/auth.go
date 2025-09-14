@@ -155,6 +155,12 @@ func CreateJWT(authService *services.AuthService, w http.ResponseWriter, r *http
 
 	tokenDetails["status"] = "success"
 
+	err = SetDocAdminCookie(w, config.ParsedConfig.Security.CookieConfig, authService.JwtSecretKey)
+	if err != nil {
+		SendJSONResponse(http.StatusInternalServerError, w, map[string]string{"status": "error", "message": err.Error()})
+		return
+	}
+
 	SendJSONResponse(http.StatusOK, w, tokenDetails)
 }
 
@@ -166,6 +172,12 @@ func RefreshJWT(authService *services.AuthService, w http.ResponseWriter, r *htt
 	}
 
 	token, err := authService.RefreshJWT(headerToken)
+	if err != nil {
+		SendJSONResponse(http.StatusInternalServerError, w, map[string]string{"status": "error", "message": err.Error()})
+		return
+	}
+
+	err = SetDocAdminCookie(w, config.ParsedConfig.Security.CookieConfig, authService.JwtSecretKey)
 	if err != nil {
 		SendJSONResponse(http.StatusInternalServerError, w, map[string]string{"status": "error", "message": err.Error()})
 		return
@@ -327,8 +339,9 @@ func MicrosoftCallback(aS *services.AuthService, w http.ResponseWriter, r *http.
 		return
 	}
 
-	client := microsoftOauthCfg.Client(context.Background(), token)
-	resp, err := client.Get("https://graph.microsoft.com/v1.0/me")
+	authCli := microsoftOauthCfg.Client(context.Background(), token)
+	//nolint:noctx
+	resp, err := authCli.Get("https://graph.microsoft.com/v1.0/me")
 	if err != nil {
 		http.Error(w, "Failed to get user info: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -401,13 +414,13 @@ func GoogleCallback(aS *services.AuthService, w http.ResponseWriter, r *http.Req
 
 	googleOAuthCfg := getGoogleOAuthConfig()
 	code := r.FormValue("code")
-	token, err := googleOAuthCfg.Exchange(context.Background(), code)
+	token, err := googleOAuthCfg.Exchange(r.Context(), code)
 	if err != nil {
 		http.Error(w, "Failed to exchange token: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	email, err := getGoogleUserEmail(token.AccessToken)
+	email, err := getGoogleUserEmail(r.Context(), token.AccessToken)
 	if err != nil {
 		http.Error(w, "Failed to get user email: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -433,8 +446,12 @@ func GoogleCallback(aS *services.AuthService, w http.ResponseWriter, r *http.Req
 	http.Redirect(w, r, fmt.Sprintf("/admin/login/gg?token=%s", tokenDetails), http.StatusTemporaryRedirect)
 }
 
-func getGoogleUserEmail(accessToken string) (string, error) {
-	resp, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + accessToken)
+func getGoogleUserEmail(ctx context.Context, accessToken string) (string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://www.googleapis.com/oauth2/v2/userinfo?access_token="+accessToken, nil)
+	if err != nil {
+		return "", err
+	}
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return "", err
 	}
