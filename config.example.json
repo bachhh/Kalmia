@@ -1,4 +1,5 @@
 {
+  "pathToSecret": "./secret.example.json"
   "environment": "production",
   "host": "localhost",
   "port": 2727,
