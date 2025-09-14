@@ -131,25 +131,38 @@ async function makeRequest<T = any>(
   url: string,
   method: Method = "get",
   data: any = null, // eslint-disable-line @typescript-eslint/no-explicit-any
+  withCredentials: boolean = false,
 ): Promise<ApiResponse<T>> {
   try {
     let response: AxiosResponse<T>;
 
     switch (method.toLowerCase()) {
       case "get":
-        response = await instance.get<T>(url, { params: data });
+        response = await instance.get<T>(url, {
+          params: data,
+          withCredentials: withCredentials,
+        });
         break;
       case "post":
-        response = await instance.post<T>(url, data);
+        response = await instance.post<T>(url, data, {
+          withCredentials: withCredentials,
+        });
         break;
       case "put":
-        response = await instance.put<T>(url, data);
+        response = await instance.put<T>(url, data, {
+          withCredentials: withCredentials,
+        });
         break;
       case "delete":
-        response = await instance.delete<T>(url, { data });
+        response = await instance.delete<T>(url, {
+          data,
+          withCredentials: withCredentials,
+        });
         break;
       case "patch":
-        response = await instance.patch<T>(url, data);
+        response = await instance.patch<T>(url, data, {
+          withCredentials: withCredentials,
+        });
         break;
       default:
         throw new Error(`Unsupported HTTP method: ${method}`);
@@ -179,10 +192,10 @@ async function makeRequest<T = any>(
 }
 
 export const createJWT = (data: AuthCredentials): Promise<ApiResponse> =>
-  makeRequest("/kal-api/auth/jwt/create", "post", data);
+  makeRequest("/kal-api/auth/jwt/create", "post", data, true);
 
 export const refreshJWT = (token: string | null): Promise<ApiResponse> =>
-  makeRequest("/kal-api/auth/jwt/refresh", "post", { token });
+  makeRequest("/kal-api/auth/jwt/refresh", "post", { token }, true);
 
 export const validateJWT = async (token: string): Promise<ApiResponse> => {
   try {

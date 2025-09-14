@@ -43,6 +43,7 @@ func GenerateJWTAccessToken(
 
 	claims := JWTData{
 		RegisteredClaims: jwt.RegisteredClaims{
+			// TODO: make configurable
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
 		},
 		CustomClaims: map[string]string{
@@ -99,4 +100,46 @@ func GetJWTUserId(token string, secretKey string) (string, error) {
 	}
 
 	return claims.UserId, nil
+}
+
+// special jwt for document auth, this is not related to user jwt auth
+type DocJWTData struct {
+	jwt.RegisteredClaims
+}
+
+func GenDocJWT(secretKey string, ttlHours int64) (string, int64, error) {
+	claims := DocJWTData{
+		RegisteredClaims: jwt.RegisteredClaims{
+			// TODO: make configurable
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
+		},
+	}
+
+	tokenString := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	token, err := tokenString.SignedString([]byte(secretKey))
+	if err != nil {
+		return "", 0, err
+	}
+
+	expiry := claims.ExpiresAt.Time.Unix()
+
+	return token, expiry, nil
+}
+
+// validate and parse JWT claims for viewing document
+func ValidateDocJWT(token string, secretKey string) (*DocJWTData, error) {
+	claims := &DocJWTData{}
+	_, err := jwt.ParseWithClaims(
+		token,
+		claims,
+		func(token *jwt.Token) (interface{}, error) {
+			return []byte(secretKey), nil
+		},
+		jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return claims, nil
 }

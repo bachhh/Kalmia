@@ -8,9 +8,8 @@ import (
 	"git.difuse.io/Difuse/kalmia/logger"
 )
 
-var (
-	Cache *sync.Map
-)
+//nolint:gochecknoglobals
+var Cache *sync.Map
 
 type CacheEntry struct {
 	Data        []byte

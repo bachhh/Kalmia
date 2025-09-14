@@ -35,7 +35,7 @@ func ValidateRequest[T any](w http.ResponseWriter, r *http.Request) (*T, error) 
 func SendJSONResponse(httpCode int, w http.ResponseWriter, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(httpCode)
-	json.NewEncoder(w).Encode(data)
+	_ = json.NewEncoder(w).Encode(data)
 }
 
 func GetTokenFromHeader(r *http.Request) (string, error) {

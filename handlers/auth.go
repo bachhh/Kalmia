@@ -155,6 +155,12 @@ func CreateJWT(authService *services.AuthService, w http.ResponseWriter, r *http
 
 	tokenDetails["status"] = "success"
 
+	err = SetDocAdminCookie(w, authService.JwtSecretKey)
+	if err != nil {
+		SendJSONResponse(http.StatusInternalServerError, w, map[string]string{"status": "error", "message": err.Error()})
+		return
+	}
+
 	SendJSONResponse(http.StatusOK, w, tokenDetails)
 }
 
@@ -166,6 +172,12 @@ func RefreshJWT(authService *services.AuthService, w http.ResponseWriter, r *htt
 	}
 
 	token, err := authService.RefreshJWT(headerToken)
+	if err != nil {
+		SendJSONResponse(http.StatusInternalServerError, w, map[string]string{"status": "error", "message": err.Error()})
+		return
+	}
+
+	err = SetDocAdminCookie(w, authService.JwtSecretKey)
 	if err != nil {
 		SendJSONResponse(http.StatusInternalServerError, w, map[string]string{"status": "error", "message": err.Error()})
 		return
