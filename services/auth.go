@@ -11,11 +11,15 @@ import (
 )
 
 type AuthService struct {
-	DB *gorm.DB
+	DB           *gorm.DB
+	jwtSecretKey string
 }
 
-func NewAuthService(db *gorm.DB) *AuthService {
-	return &AuthService{DB: db}
+func NewAuthService(db *gorm.DB, jwtSecretKey string) *AuthService {
+	return &AuthService{
+		DB:           db,
+		jwtSecretKey: jwtSecretKey,
+	}
 }
 
 func (service *AuthService) GetUsers() ([]models.User, error) {
@@ -39,7 +43,15 @@ func (service *AuthService) CreateJWT(username, password string) (map[string]int
 		return nil, fmt.Errorf("invalid_password")
 	}
 
-	tokenString, expiry, err := utils.GenerateJWTAccessToken(user.ID, user.Username, user.Email, user.Photo, user.Admin, user.Permissions)
+	tokenString, expiry, err := utils.GenerateJWTAccessToken(
+		user.ID,
+		user.Username,
+		user.Email,
+		user.Photo,
+		user.Admin,
+		user.Permissions,
+		service.jwtSecretKey,
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed_to_generate_jwt")
 	}
@@ -54,7 +66,7 @@ func (service *AuthService) CreateJWT(username, password string) (map[string]int
 		return nil, fmt.Errorf("failed_to_create_token")
 	}
 
-	claims, err := utils.ValidateJWT(tokenString)
+	claims, err := utils.ValidateJWT(tokenString, service.jwtSecretKey)
 	if err != nil {
 		service.DB.Where("token = ?", tokenString).Delete(&models.Token{})
 		return nil, fmt.Errorf("invalid_jwt_created")
@@ -90,7 +102,7 @@ func (service *AuthService) VerifyTokenInDb(token string, needAdmin bool) bool {
 		}
 	}
 
-	_, err := utils.ValidateJWT(token)
+	_, err := utils.ValidateJWT(token, service.jwtSecretKey)
 
 	return err == nil
 }
@@ -150,7 +162,6 @@ func (service *AuthService) GetUserFromToken(token string) (models.User, error) 
 
 func (service *AuthService) CreateUser(username, email, password string, admin bool, permissions []string) error {
 	hashedPassword, err := utils.HashPassword(password)
-
 	if err != nil {
 		return fmt.Errorf("failed_to_hash_password")
 	}
@@ -160,7 +171,6 @@ func (service *AuthService) CreateUser(username, email, password string, admin b
 	}
 
 	jsonPermissions, err := json.Marshal(permissions)
-
 	if err != nil {
 		return fmt.Errorf("failed_to_marshal_permissions")
 	}
@@ -216,7 +226,6 @@ func (service *AuthService) EditUser(id uint, username, email, password, photo s
 
 	if len(permissions) > 0 {
 		jsonPermissions, err := json.Marshal(permissions)
-
 		if err != nil {
 			return fmt.Errorf("failed_to_marshal_permissions")
 		}
@@ -262,7 +271,15 @@ func (service *AuthService) CreateJWTFromEmail(email string) (string, error) {
 		return "", fmt.Errorf("user_not_found")
 	}
 
-	tokenString, expiry, err := utils.GenerateJWTAccessToken(user.ID, user.Username, user.Email, user.Photo, user.Admin, user.Permissions)
+	tokenString, expiry, err := utils.GenerateJWTAccessToken(
+		user.ID,
+		user.Username,
+		user.Email,
+		user.Photo,
+		user.Admin,
+		user.Permissions,
+		service.jwtSecretKey,
+	)
 	if err != nil {
 		return "", fmt.Errorf("failed_to_generate_jwt")
 	}
@@ -277,7 +294,7 @@ func (service *AuthService) CreateJWTFromEmail(email string) (string, error) {
 		return "", fmt.Errorf("failed_to_create_token")
 	}
 
-	_, err = utils.ValidateJWT(tokenString)
+	_, err = utils.ValidateJWT(tokenString, service.jwtSecretKey)
 	if err != nil {
 		service.DB.Where("token = ?", tokenString).Delete(&models.Token{})
 		return "", fmt.Errorf("invalid_jwt_created")
@@ -287,7 +304,7 @@ func (service *AuthService) CreateJWTFromEmail(email string) (string, error) {
 }
 
 func (service *AuthService) RefreshJWT(token string) (string, error) {
-	claims, err := utils.ValidateJWT(token)
+	claims, err := utils.ValidateJWT(token, service.jwtSecretKey)
 	if err != nil {
 		return "", fmt.Errorf("invalid_jwt")
 	}
@@ -298,12 +315,19 @@ func (service *AuthService) RefreshJWT(token string) (string, error) {
 	}
 
 	permissionsJSON, err := json.Marshal(claims.Permissions)
-
 	if err != nil {
 		return "", fmt.Errorf("failed_to_marshal_permissions")
 	}
 
-	newToken, expiry, err := utils.GenerateJWTAccessToken(userId, claims.Username, claims.Email, claims.Photo, claims.IsAdmin, string(permissionsJSON))
+	newToken, expiry, err := utils.GenerateJWTAccessToken(
+		userId,
+		claims.Username,
+		claims.Email,
+		claims.Photo,
+		claims.IsAdmin,
+		string(permissionsJSON),
+		service.jwtSecretKey,
+	)
 	if err != nil {
 		return "", fmt.Errorf("failed_to_generate_new_jwt")
 	}
@@ -331,8 +355,7 @@ func (service *AuthService) ValidateJWT(token string) (map[string]interface{}, e
 		return nil, fmt.Errorf("token_not_found")
 	}
 
-	claims, err := utils.ValidateJWT(token)
-
+	claims, err := utils.ValidateJWT(token, service.jwtSecretKey)
 	if err != nil {
 		return nil, fmt.Errorf("invalid_jwt")
 	}
@@ -349,8 +372,7 @@ func (service *AuthService) ValidateJWT(token string) (map[string]interface{}, e
 }
 
 func (service *AuthService) RevokeJWT(token string) error {
-	_, err := utils.ValidateJWT(token)
-
+	_, err := utils.ValidateJWT(token, service.jwtSecretKey)
 	if err != nil {
 		return fmt.Errorf("invalid_jwt")
 	}

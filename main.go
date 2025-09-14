@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/signal"
 	"sync"
-	"time"
 
 	"git.difuse.io/Difuse/kalmia/cmd"
 	"git.difuse.io/Difuse/kalmia/config"
@@ -24,6 +23,7 @@ import (
 //go:embed web/build
 var adminFS embed.FS
 
+//nolint:gochecknoglobals
 var startupWg sync.WaitGroup
 
 func main() {
@@ -38,25 +38,20 @@ func main() {
 
 	db.InitCache()
 
-	serviceRegistry := services.NewServiceRegistry(d, cfg.LogSubCmd)
-	aS := serviceRegistry.AuthService
-	dS := serviceRegistry.DocService
+	serviceRegistry := services.NewServiceRegistry(d, cfg.LogSubCmd, cfg.Secret)
+	fmt.Printf("%+v\n", cfg.Secret)
+	authSrvc := serviceRegistry.AuthService
+	docSrvc := serviceRegistry.DocService
 
-	startupWg.Add(1)
-	go func() {
-		dS.StartupCheck()
-		startupWg.Done()
-	}()
-
-	go func() {
-		startupWg.Wait()
-		// start delete job and build job process every 10 seconds
-		for {
-			dS.DeleteJob()
-			dS.BuildJob()
-			time.Sleep(10 * time.Second)
-		}
-	}()
+	// go func() {
+	// 	_ = docSrvc.StartupCheck()
+	// 	// start delete job and build job process every 10 seconds
+	// 	for {
+	// 		docSrvc.DeleteJob()
+	// 		docSrvc.BuildJob()
+	// 		time.Sleep(10 * time.Second)
+	// 	}
+	// }()
 
 	/* Setup router */
 	router := mux.NewRouter()
@@ -73,26 +68,26 @@ func main() {
 	/* Health endpoints */
 	healthRouter := kRouter.PathPrefix("/health").Subrouter()
 	healthRouter.HandleFunc("/ping", handlers.HealthPing).Methods("GET")
-	healthRouter.HandleFunc("/last-trigger", func(w http.ResponseWriter, r *http.Request) { handlers.TriggerCheck(dS, w, r) }).Methods("GET")
+	healthRouter.HandleFunc("/last-trigger", func(w http.ResponseWriter, r *http.Request) { handlers.TriggerCheck(docSrvc, w, r) }).Methods("GET")
 
 	oAuthRouter := kRouter.PathPrefix("/oauth").Subrouter()
-	oAuthRouter.HandleFunc("/github", func(w http.ResponseWriter, r *http.Request) { handlers.GithubLogin(aS, w, r) }).Methods("GET")
-	oAuthRouter.HandleFunc("/github/callback", func(w http.ResponseWriter, r *http.Request) { handlers.GithubCallback(aS, w, r) }).Methods("GET")
-	oAuthRouter.HandleFunc("/microsoft", func(w http.ResponseWriter, r *http.Request) { handlers.MicrosoftLogin(aS, w, r) }).Methods("GET")
-	oAuthRouter.HandleFunc("/microsoft/callback", func(w http.ResponseWriter, r *http.Request) { handlers.MicrosoftCallback(aS, w, r) }).Methods("GET")
-	oAuthRouter.HandleFunc("/google", func(w http.ResponseWriter, r *http.Request) { handlers.GoogleLogin(aS, w, r) }).Methods("GET")
-	oAuthRouter.HandleFunc("/google/callback", func(w http.ResponseWriter, r *http.Request) { handlers.GoogleCallback(aS, w, r) }).Methods("GET")
-	oAuthRouter.HandleFunc("/providers", func(w http.ResponseWriter, r *http.Request) { handlers.GetOAuthProviders(aS, w, r) }).Methods("GET")
+	oAuthRouter.HandleFunc("/github", func(w http.ResponseWriter, r *http.Request) { handlers.GithubLogin(authSrvc, w, r) }).Methods("GET")
+	oAuthRouter.HandleFunc("/github/callback", func(w http.ResponseWriter, r *http.Request) { handlers.GithubCallback(authSrvc, w, r) }).Methods("GET")
+	oAuthRouter.HandleFunc("/microsoft", func(w http.ResponseWriter, r *http.Request) { handlers.MicrosoftLogin(authSrvc, w, r) }).Methods("GET")
+	oAuthRouter.HandleFunc("/microsoft/callback", func(w http.ResponseWriter, r *http.Request) { handlers.MicrosoftCallback(authSrvc, w, r) }).Methods("GET")
+	oAuthRouter.HandleFunc("/google", func(w http.ResponseWriter, r *http.Request) { handlers.GoogleLogin(authSrvc, w, r) }).Methods("GET")
+	oAuthRouter.HandleFunc("/google/callback", func(w http.ResponseWriter, r *http.Request) { handlers.GoogleCallback(authSrvc, w, r) }).Methods("GET")
+	oAuthRouter.HandleFunc("/providers", func(w http.ResponseWriter, r *http.Request) { handlers.GetOAuthProviders(authSrvc, w, r) }).Methods("GET")
 
 	authRouter := kRouter.PathPrefix("/auth").Subrouter()
-	authRouter.Use(middleware.EnsureAuthenticated(aS))
+	authRouter.Use(middleware.EnsureAuthenticated(authSrvc))
 
-	authRouter.HandleFunc("/user/create", func(w http.ResponseWriter, r *http.Request) { handlers.CreateUser(aS, w, r) }).Methods("POST")
-	authRouter.HandleFunc("/user/edit", func(w http.ResponseWriter, r *http.Request) { handlers.EditUser(aS, w, r) }).Methods("POST")
-	authRouter.HandleFunc("/user/delete", func(w http.ResponseWriter, r *http.Request) { handlers.DeleteUser(aS, w, r) }).Methods("POST")
+	authRouter.HandleFunc("/user/create", func(w http.ResponseWriter, r *http.Request) { handlers.CreateUser(authSrvc, w, r) }).Methods("POST")
+	authRouter.HandleFunc("/user/edit", func(w http.ResponseWriter, r *http.Request) { handlers.EditUser(authSrvc, w, r) }).Methods("POST")
+	authRouter.HandleFunc("/user/delete", func(w http.ResponseWriter, r *http.Request) { handlers.DeleteUser(authSrvc, w, r) }).Methods("POST")
 
-	authRouter.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) { handlers.GetUsers(aS, w, r) }).Methods("GET")
-	authRouter.HandleFunc("/user", func(w http.ResponseWriter, r *http.Request) { handlers.GetUser(aS, w, r) }).Methods("POST")
+	authRouter.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) { handlers.GetUsers(authSrvc, w, r) }).Methods("GET")
+	authRouter.HandleFunc("/user", func(w http.ResponseWriter, r *http.Request) { handlers.GetUser(authSrvc, w, r) }).Methods("POST")
 
 	authRouter.HandleFunc("/user/upload-file", func(w http.ResponseWriter, r *http.Request) {
 		handlers.UploadFile(serviceRegistry, d, w, r, config.ParsedConfig)
@@ -101,41 +96,41 @@ func main() {
 		handlers.UploadAssetsFile(serviceRegistry, d, w, r, config.ParsedConfig)
 	}).Methods("POST")
 
-	authRouter.HandleFunc("/jwt/create", func(w http.ResponseWriter, r *http.Request) { handlers.CreateJWT(aS, w, r) }).Methods("POST")
-	authRouter.HandleFunc("/jwt/refresh", func(w http.ResponseWriter, r *http.Request) { handlers.RefreshJWT(aS, w, r) }).Methods("POST")
-	authRouter.HandleFunc("/jwt/validate", func(w http.ResponseWriter, r *http.Request) { handlers.ValidateJWT(aS, w, r) }).Methods("POST")
-	authRouter.HandleFunc("/jwt/revoke", func(w http.ResponseWriter, r *http.Request) { handlers.RevokeJWT(aS, w, r) }).Methods("POST")
+	authRouter.HandleFunc("/jwt/create", func(w http.ResponseWriter, r *http.Request) { handlers.CreateJWT(authSrvc, w, r) }).Methods("POST")
+	authRouter.HandleFunc("/jwt/refresh", func(w http.ResponseWriter, r *http.Request) { handlers.RefreshJWT(authSrvc, w, r) }).Methods("POST")
+	authRouter.HandleFunc("/jwt/validate", func(w http.ResponseWriter, r *http.Request) { handlers.ValidateJWT(authSrvc, w, r) }).Methods("POST")
+	authRouter.HandleFunc("/jwt/revoke", func(w http.ResponseWriter, r *http.Request) { handlers.RevokeJWT(authSrvc, w, r) }).Methods("POST")
 
 	docsRouter := kRouter.PathPrefix("/docs").Subrouter()
-	docsRouter.Use(middleware.EnsureAuthenticated(aS))
-	docsRouter.HandleFunc("/documentations", func(w http.ResponseWriter, r *http.Request) { handlers.GetDocumentations(dS, w, r) }).Methods("GET")
-	docsRouter.HandleFunc("/documentation", func(w http.ResponseWriter, r *http.Request) { handlers.GetDocumentation(dS, w, r) }).Methods("POST")
+	docsRouter.Use(middleware.EnsureAuthenticated(authSrvc))
+	docsRouter.HandleFunc("/documentations", func(w http.ResponseWriter, r *http.Request) { handlers.GetDocumentations(docSrvc, w, r) }).Methods("GET")
+	docsRouter.HandleFunc("/documentation", func(w http.ResponseWriter, r *http.Request) { handlers.GetDocumentation(docSrvc, w, r) }).Methods("POST")
 	docsRouter.HandleFunc("/documentation/create", func(w http.ResponseWriter, r *http.Request) { handlers.CreateDocumentation(serviceRegistry, w, r) }).Methods("POST")
 	docsRouter.HandleFunc("/documentation/edit", func(w http.ResponseWriter, r *http.Request) { handlers.EditDocumentation(serviceRegistry, w, r) }).Methods("POST")
-	docsRouter.HandleFunc("/documentation/delete", func(w http.ResponseWriter, r *http.Request) { handlers.DeleteDocumentation(dS, w, r) }).Methods("POST")
-	docsRouter.HandleFunc("/documentation/version", func(w http.ResponseWriter, r *http.Request) { handlers.CreateDocumentationVersion(dS, w, r) }).Methods("POST")
-	docsRouter.HandleFunc("/documentation/reorder-bulk", func(w http.ResponseWriter, r *http.Request) { handlers.BulkReorderPageOrPageGroup(dS, w, r) }).Methods("POST")
-	docsRouter.HandleFunc("/documentation/root-parent-id", func(w http.ResponseWriter, r *http.Request) { handlers.GetRootParentId(dS, w, r) }).Methods("GET")
+	docsRouter.HandleFunc("/documentation/delete", func(w http.ResponseWriter, r *http.Request) { handlers.DeleteDocumentation(docSrvc, w, r) }).Methods("POST")
+	docsRouter.HandleFunc("/documentation/version", func(w http.ResponseWriter, r *http.Request) { handlers.CreateDocumentationVersion(docSrvc, w, r) }).Methods("POST")
+	docsRouter.HandleFunc("/documentation/reorder-bulk", func(w http.ResponseWriter, r *http.Request) { handlers.BulkReorderPageOrPageGroup(docSrvc, w, r) }).Methods("POST")
+	docsRouter.HandleFunc("/documentation/root-parent-id", func(w http.ResponseWriter, r *http.Request) { handlers.GetRootParentId(docSrvc, w, r) }).Methods("GET")
 
 	importRouter := docsRouter.PathPrefix("/import").Subrouter()
-	importRouter.Use(middleware.EnsureAuthenticated(aS))
+	importRouter.Use(middleware.EnsureAuthenticated(authSrvc))
 	importRouter.HandleFunc("/gitbook", func(w http.ResponseWriter, r *http.Request) {
 		handlers.ImportGitbook(serviceRegistry, w, r, config.ParsedConfig)
 	}).Methods("POST")
 
-	docsRouter.HandleFunc("/pages", func(w http.ResponseWriter, r *http.Request) { handlers.GetPages(dS, w, r) }).Methods("GET")
-	docsRouter.HandleFunc("/page", func(w http.ResponseWriter, r *http.Request) { handlers.GetPage(dS, w, r) }).Methods("POST")
+	docsRouter.HandleFunc("/pages", func(w http.ResponseWriter, r *http.Request) { handlers.GetPages(docSrvc, w, r) }).Methods("GET")
+	docsRouter.HandleFunc("/page", func(w http.ResponseWriter, r *http.Request) { handlers.GetPage(docSrvc, w, r) }).Methods("POST")
 	docsRouter.HandleFunc("/page/create", func(w http.ResponseWriter, r *http.Request) { handlers.CreatePage(serviceRegistry, w, r) }).Methods("POST")
 	docsRouter.HandleFunc("/page/edit", func(w http.ResponseWriter, r *http.Request) { handlers.EditPage(serviceRegistry, w, r) }).Methods("POST")
-	docsRouter.HandleFunc("/page/delete", func(w http.ResponseWriter, r *http.Request) { handlers.DeletePage(dS, w, r) }).Methods("POST")
+	docsRouter.HandleFunc("/page/delete", func(w http.ResponseWriter, r *http.Request) { handlers.DeletePage(docSrvc, w, r) }).Methods("POST")
 
-	docsRouter.HandleFunc("/page-groups", func(w http.ResponseWriter, r *http.Request) { handlers.GetPageGroups(dS, w, r) }).Methods("GET")
-	docsRouter.HandleFunc("/page-group", func(w http.ResponseWriter, r *http.Request) { handlers.GetPageGroup(dS, w, r) }).Methods("POST")
+	docsRouter.HandleFunc("/page-groups", func(w http.ResponseWriter, r *http.Request) { handlers.GetPageGroups(docSrvc, w, r) }).Methods("GET")
+	docsRouter.HandleFunc("/page-group", func(w http.ResponseWriter, r *http.Request) { handlers.GetPageGroup(docSrvc, w, r) }).Methods("POST")
 	docsRouter.HandleFunc("/page-group/create", func(w http.ResponseWriter, r *http.Request) { handlers.CreatePageGroup(serviceRegistry, w, r) }).Methods("POST")
 	docsRouter.HandleFunc("/page-group/edit", func(w http.ResponseWriter, r *http.Request) { handlers.EditPageGroup(serviceRegistry, w, r) }).Methods("POST")
-	docsRouter.HandleFunc("/page-group/delete", func(w http.ResponseWriter, r *http.Request) { handlers.DeletePageGroup(dS, w, r) }).Methods("POST")
+	docsRouter.HandleFunc("/page-group/delete", func(w http.ResponseWriter, r *http.Request) { handlers.DeletePageGroup(docSrvc, w, r) }).Methods("POST")
 
-	rsPressMiddleware := middleware.RsPressMiddleware(dS)
+	rsPressMiddleware := middleware.RsPressMiddleware(docSrvc)
 	router.Use(rsPressMiddleware)
 
 	spaHandler := createSPAHandler()

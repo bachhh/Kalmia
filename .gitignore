@@ -10,5 +10,6 @@ web/build/*
 .vscode/
 postgres_data/
 minio_data/
+secret.json
 rspress_data/
 ykkap/

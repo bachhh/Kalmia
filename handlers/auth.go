@@ -19,9 +19,12 @@ import (
 )
 
 var (
-	githubOauthConfig    *oauth2.Config
+	//nolint:gochecknoglobals
+	githubOauthConfig *oauth2.Config
+	//nolint:gochecknoglobals
 	microsoftOauthConfig *oauth2.Config
-	googleOAuthConfig    *oauth2.Config
+	//nolint:gochecknoglobals
+	googleOAuthConfig *oauth2.Config
 )
 
 func CreateUser(authService *services.AuthService, w http.ResponseWriter, r *http.Request) {
