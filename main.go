@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"sync"
+	"time"
 
 	"git.difuse.io/Difuse/kalmia/cmd"
 	"git.difuse.io/Difuse/kalmia/config"
@@ -16,6 +17,7 @@ import (
 	"git.difuse.io/Difuse/kalmia/logger"
 	"git.difuse.io/Difuse/kalmia/middleware"
 	"git.difuse.io/Difuse/kalmia/services"
+	muxHandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 )
@@ -41,20 +43,21 @@ func main() {
 	authSrvc := serviceRegistry.AuthService
 	docSrvc := serviceRegistry.DocService
 
-	// go func() {
-	// 	_ = docSrvc.StartupCheck()
-	// 	// start delete job and build job process every 10 seconds
-	// 	for {
-	// 		docSrvc.DeleteJob()
-	// 		docSrvc.BuildJob()
-	// 		time.Sleep(10 * time.Second)
-	// 	}
-	// }()
+	go func() {
+		_ = docSrvc.StartupCheck()
+		// start delete job and build job process every 10 seconds
+		for {
+			docSrvc.DeleteJob()
+			docSrvc.BuildJob()
+			time.Sleep(10 * time.Second)
+		}
+	}()
 
 	/* Setup router */
 	router := mux.NewRouter()
 	router.Use(middleware.RecoverWithLog(logger.Logger))
 	router.Use(middleware.BodyLimit(config.ParsedConfig.BodyLimitMb))
+	router.Use(muxHandlers.CORS(config.ParsedConfig.Security.CORSConfig.ToMuxCORSOptions()...))
 
 	kRouter := router.PathPrefix("/kal-api").Subrouter()
 
@@ -136,8 +139,17 @@ func main() {
 
 	logger.Info("Starting server", zap.Int("port", cfg.Port))
 
-	http.Handle("/", router)
-	_ = http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), middleware.CorsMiddleware(router))
+	srv := &http.Server{
+		Handler:      router,
+		Addr:         fmt.Sprintf(":%d", cfg.Port),
+		WriteTimeout: 60 * time.Second,
+		ReadTimeout:  60 * time.Second,
+	}
+
+	err := srv.ListenAndServe()
+	if err != nil {
+		logger.Fatal("srv.ListenAndServe", zap.Error(err))
+	}
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+
+	muxHandlers "github.com/gorilla/handlers"
 )
 
 type User struct {
@@ -47,6 +49,7 @@ type Config struct {
 	Environment    string         `json:"environment"`
 	Host           string         `json:"host"`
 	Port           int            `json:"port"`
+	Security       Security       `json:"security"`
 	Database       string         `json:"database"`
 	LogLevel       string         `json:"logLevel"`
 	AssetStorage   string         `json:"assetStorage"`
@@ -61,6 +64,70 @@ type Config struct {
 	BodyLimitMb    int64          `json:"bodyLimitMb"`
 	PathToSecret   string         `json:"pathToSecretFile"`
 	Secret         Secret         `json:"-"`
+}
+
+type Security struct {
+	CORSConfig CORSConfig `json:"corsConfig"`
+	// TODO CFRSConfig CFRSConfig
+	// other security config here
+}
+
+type (
+	// TODO CFRSConfig struct{}
+	CORSConfig struct {
+		AllowedOrigins   []string `json:"allowedOrigins"`
+		AllowedMethods   []string `json:"allowedMethods"`
+		AllowedHeaders   []string `json:"allowedHeaders"`
+		AllowCredentials bool     `json:"allowCredentials"`
+		ExposedHeaders   []string `json:"exposedHeaders"`
+		CORSMaxAge       int      `json:"corsMaxAge"`
+	}
+)
+
+// ToMuxCORSOptions converts the CORSConfig struct into a slice of gorilla/handlers.CORSOption.
+func (c *CORSConfig) ToMuxCORSOptions() []muxHandlers.CORSOption {
+	options := []muxHandlers.CORSOption{
+		muxHandlers.AllowedOrigins(c.AllowedOrigins),
+		muxHandlers.AllowedMethods(c.AllowedMethods),
+		muxHandlers.AllowedHeaders(c.AllowedHeaders),
+		muxHandlers.ExposedHeaders(c.ExposedHeaders),
+		muxHandlers.MaxAge(c.CORSMaxAge),
+	}
+
+	if c.AllowCredentials {
+		options = append(options, muxHandlers.AllowCredentials())
+	}
+
+	return options
+}
+
+//nolint:gochecknoglobals
+var (
+	DefaultAllowedOrigins   = []string{"*"}
+	DefaultAllowedMethods   = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
+	DefaultAllowedHeaders   = []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"}
+	DefaultExposedHeaders   = []string{"Link"}
+	DefaultAllowCredentials = true
+)
+
+// set default values to CORSConfig if they are empty.
+func (cfg *CORSConfig) SetDefault() {
+	if len(cfg.AllowedOrigins) == 0 {
+		cfg.AllowedOrigins = DefaultAllowedOrigins
+	}
+	if len(cfg.AllowedMethods) == 0 {
+		cfg.AllowedMethods = DefaultAllowedMethods
+	}
+	if len(cfg.AllowedHeaders) == 0 {
+		cfg.AllowedHeaders = DefaultAllowedHeaders
+	}
+	if len(cfg.ExposedHeaders) == 0 {
+		cfg.ExposedHeaders = DefaultExposedHeaders
+	}
+
+	if !cfg.AllowCredentials {
+		cfg.AllowCredentials = DefaultAllowCredentials
+	}
 }
 
 type Secret struct {
@@ -104,6 +171,10 @@ func ParseConfig(path string) *Config {
 	if ParsedConfig.BodyLimitMb == 0 {
 		ParsedConfig.BodyLimitMb = 50
 	}
+
+	// sensible defaualt for cors
+	ParsedConfig.Security.CORSConfig.SetDefault()
+
 	if ParsedConfig.PathToSecret == "" {
 		panic("path to secret file is empty")
 	}
