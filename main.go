@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"sync"
 	"time"
 
 	"git.difuse.io/Difuse/kalmia/cmd"
@@ -25,9 +24,6 @@ import (
 //go:embed web/build
 var adminFS embed.FS
 
-//nolint:gochecknoglobals
-var startupWg sync.WaitGroup
-
 func main() {
 	cfgPath := cmd.ParseFlags()
 	cfg := config.ParseConfig(cfgPath)
@@ -44,7 +40,9 @@ func main() {
 	docSrvc := serviceRegistry.DocService
 
 	go func() {
-		_ = docSrvc.StartupCheck()
+		if err := docSrvc.StartupCheck(); err != nil {
+			logger.Error("doc service failed startup check", zap.Error(err))
+		}
 		// start delete job and build job process every 10 seconds
 		for {
 			docSrvc.DeleteJob()
