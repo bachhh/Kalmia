@@ -78,6 +78,7 @@ func (service *DocService) GetDocumentations() ([]models.Documentation, error) {
 		"GitPassword",
 		"GitBranch",
 		"TokenSecret",
+		"RedirectURL",
 	).
 		Find(&documentations).Error; err != nil {
 		return nil, fmt.Errorf("failed_to_get_documentations %w", err)
@@ -153,6 +154,7 @@ func (service *DocService) GetDocumentation(id uint) (models.Documentation, erro
 			"GitPassword",
 			"GitBranch",
 			"TokenSecret",
+			"RedirectURL",
 		).
 		Find(&documentation).Error; err != nil {
 		return models.Documentation{}, fmt.Errorf("failed_to_get_documentation")
@@ -427,6 +429,7 @@ type EditDocumentationParams struct {
 	MoreLabelLinks      string
 	BucketUploadedFiles map[string]string
 	TokenSecret         string
+	RedirectURL         string
 }
 
 func (service *DocService) EditDocumentation(params EditDocumentationParams) error {
@@ -459,6 +462,7 @@ func (service *DocService) EditDocumentation(params EditDocumentationParams) err
 		doc.GitPassword = params.GitPassword
 		doc.GitEmail = params.GitEmail
 		doc.TokenSecret = params.TokenSecret
+		doc.RedirectURL = params.RedirectURL
 		if isTarget && params.Version != "" {
 			doc.Version = params.Version
 		}
@@ -768,6 +772,7 @@ func (service *DocService) CreateDocumentationVersion(originalDocId uint, newVer
 		GitPassword:      originalDoc.GitPassword,
 		GitEmail:         originalDoc.GitEmail,
 		TokenSecret:      originalDoc.TokenSecret,
+		RedirectURL:      originalDoc.RedirectURL,
 	}
 
 	err = service.DB.Transaction(func(tx *gorm.DB) error {

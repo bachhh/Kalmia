@@ -110,6 +110,7 @@ export interface Documentation {
   gitPassword: string;
   gitBranch: string;
   tokenSecret: string;
+  redirectURL: string;
 }
 
 export interface FormField {
@@ -175,6 +176,7 @@ export interface FormData {
   gitPassword: string | undefined;
   gitBranch: string | undefined;
   tokenSecret: string;
+  redirectURL: string;
 }
 
 export function isPage(item: PageOrGroup): item is Page {

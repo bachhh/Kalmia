@@ -53,6 +53,7 @@ export interface DocumentationPayload {
   bucketNavImageDark: string;
   // token for auth
   tokenSecret: string;
+  redirectURL: string;
 }
 
 interface CreateVersionPayload {

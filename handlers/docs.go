@@ -94,6 +94,7 @@ func CreateDocumentation(service *services.ServiceRegistry, w http.ResponseWrite
 		BucketNavImage     string `json:"bucketNavImage"`
 		BucketNavImageDark string `json:"bucketNavImageDark"`
 		TokenSecret        string `json:"tokenSecret"`
+		RedirectURL        string `json:"RedirectURL"`
 	}
 
 	req, err := ValidateRequest[Request](w, r)
@@ -129,6 +130,7 @@ func CreateDocumentation(service *services.ServiceRegistry, w http.ResponseWrite
 		GitPassword:      req.GitPassword,
 		GitEmail:         req.GitEmail,
 		TokenSecret:      req.TokenSecret,
+		RedirectURL:      req.RedirectURL,
 	}
 
 	err = service.DocService.CreateDocumentation(documentation, user, map[string]string{
@@ -217,6 +219,7 @@ func EditDocumentation(srv *services.ServiceRegistry, w http.ResponseWriter, r *
 		BucketNavImageDark string `json:"bucketNavImageDark"`
 
 		TokenSecret string `json:"tokenSecret"`
+		RedirectURL string `json:"redirectURL"`
 	}
 
 	req, err := ValidateRequest[Request](w, r)
@@ -269,6 +272,7 @@ func EditDocumentation(srv *services.ServiceRegistry, w http.ResponseWriter, r *
 				"navImageDark": req.BucketNavImageDark,
 			},
 			TokenSecret: req.TokenSecret,
+			RedirectURL: req.RedirectURL,
 		})
 	if err != nil {
 		SendJSONResponse(http.StatusInternalServerError, w, map[string]string{"status": "error", "message": err.Error()})
