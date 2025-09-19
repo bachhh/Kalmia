@@ -2,7 +2,6 @@
 
 APP_NAME=kalmia
 APP_VERSION=0.2.0
-TEST_DIRS := $(shell find . -name '*_test.go' -exec dirname {} \; | sort -u)
 
 all: deps build
 
@@ -13,17 +12,10 @@ build-web:
 	cd web && npm install && rm -rf build/ && npm run build
 
 test:
-ifeq ($(strip $(TEST_DIRS)),)
-	@echo "No test files found."
-else
-	@for dir in $(TEST_DIRS); do \
-		echo "Running tests in $$dir"; \
-		go test $$dir; \
-	done
-endif
+	go test ./...
 
 lint:
-	golangci-lint run --exclude-dirs-use-default=false --timeout=3m ./...
+	golangci-lint run --exclude-use-default=false --timeout=3m ./...
 
 # Linux builds
 build-linux-amd64:

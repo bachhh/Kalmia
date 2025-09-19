@@ -30,9 +30,13 @@ func GetFile(service *gorm.DB, w http.ResponseWriter, r *http.Request, cfg *conf
 	}
 
 	sess, err := session.NewSession(&aws.Config{
-		Endpoint:         aws.String(config.ParsedConfig.S3.Endpoint),
-		Region:           aws.String(config.ParsedConfig.S3.Region),
-		Credentials:      credentials.NewStaticCredentials(config.ParsedConfig.S3.AccessKeyId, config.ParsedConfig.S3.SecretAccessKey, ""),
+		Endpoint: aws.String(config.ParsedConfig.S3.Endpoint),
+		Region:   aws.String(config.ParsedConfig.S3.Region),
+		Credentials: credentials.NewStaticCredentials(
+			config.ParsedConfig.S3.AccessKeyId,
+			config.ParsedConfig.S3.SecretAccessKey,
+			"",
+		),
 		S3ForcePathStyle: aws.Bool(config.ParsedConfig.S3.UsePathStyle),
 	})
 	if err != nil {
@@ -53,7 +57,6 @@ func GetFile(service *gorm.DB, w http.ResponseWriter, r *http.Request, cfg *conf
 		SendJSONResponse(http.StatusInternalServerError, w, map[string]string{"status": "error", "message": "error getting object: " + err.Error()})
 		return
 	}
-
 	defer result.Body.Close()
 
 	body, err := io.ReadAll(result.Body)

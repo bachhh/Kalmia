@@ -237,14 +237,14 @@ func SetupDataPath() error {
 	}
 
 	if _, err := os.Stat(ParsedConfig.DataPath); os.IsNotExist(err) {
-		err := os.Mkdir(ParsedConfig.DataPath, 0o755)
+		err := os.Mkdir(ParsedConfig.DataPath, 0o750)
 		if err != nil {
 			return err
 		}
 	}
 
 	if _, err := os.Stat(ParsedConfig.DataPath + "/rspress_data"); os.IsNotExist(err) {
-		err := os.Mkdir(ParsedConfig.DataPath+"/rspress_data", 0o755)
+		err := os.Mkdir(ParsedConfig.DataPath+"/rspress_data", 0o750)
 		if err != nil {
 			return err
 		}
