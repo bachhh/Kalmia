@@ -80,7 +80,7 @@ func (service *DocService) GetDocumentations() ([]models.Documentation, error) {
 		"TokenSecret",
 	).
 		Find(&documentations).Error; err != nil {
-		return nil, fmt.Errorf("failed_to_get_documentations")
+		return nil, fmt.Errorf("failed_to_get_documentations %w", err)
 	}
 
 	return documentations, nil

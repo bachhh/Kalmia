@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+//nolint:gochecknoglobals
 var Logger *zap.Logger
 
 func InitializeLogger(env string, logLevel string, dataPath string) {

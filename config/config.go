@@ -2,8 +2,11 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
+	"net/http"
 	"os"
+	"strings"
 
 	muxHandlers "github.com/gorilla/handlers"
 )
@@ -67,9 +70,41 @@ type Config struct {
 }
 
 type Security struct {
-	CORSConfig CORSConfig `json:"corsConfig"`
+	CORSConfig   CORSConfig   `json:"corsConfig"`
+	CookieConfig CookieConfig `json:"cookie_config"`
 	// TODO CFRSConfig CFRSConfig
 	// other security config here
+}
+
+type CookieConfig struct {
+	Domain   string   `json:"domain"`
+	Path     string   `json:"path"`
+	Age      string   `json:"age"`
+	Secure   bool     `json:"secure"`
+	SameSite SameSite `json:"sameSite"` // lax / strict / none
+	HttpOnly bool     `json:"httpOnly"`
+}
+
+type SameSite http.SameSite
+
+// UnmarshalJSON implements the json.Unmarshaler interface.
+func (s *SameSite) UnmarshalJSON(data []byte) error {
+	var str string
+	if err := json.Unmarshal(data, &str); err != nil {
+		return err
+	}
+
+	switch strings.ToLower(str) {
+	case "lax":
+		*s = SameSite(http.SameSiteLaxMode)
+	case "strict":
+		*s = SameSite(http.SameSiteStrictMode)
+	case "none":
+		*s = SameSite(http.SameSiteNoneMode)
+	default:
+		return fmt.Errorf("unknown SameSite value: %q", str)
+	}
+	return nil
 }
 
 type (
@@ -92,6 +127,7 @@ func (c *CORSConfig) ToMuxCORSOptions() []muxHandlers.CORSOption {
 		muxHandlers.AllowedHeaders(c.AllowedHeaders),
 		muxHandlers.ExposedHeaders(c.ExposedHeaders),
 		muxHandlers.MaxAge(c.CORSMaxAge),
+		muxHandlers.AllowCredentials(),
 	}
 
 	if c.AllowCredentials {
