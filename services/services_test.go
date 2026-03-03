@@ -11,9 +11,11 @@ import (
 	"go.uber.org/zap"
 )
 
-var TestConfig *config.Config
-var TestAuthService *AuthService
-var TestDocService *DocService
+var (
+	TestConfig      *config.Config
+	TestAuthService *AuthService
+	TestDocService  *DocService
+)
 
 func TestMain(m *testing.M) {
 	configJson := `{
@@ -23,24 +25,21 @@ func TestMain(m *testing.M) {
 		"database": "sqlite",
 		"sessionSecret": "test",
 		"dataPath": "./service_test_dir",
-		"users": [{"username": "admin", "email": "admin@kalmia.difuse.io", "password": "admin", "admin": true}, 
+		"users": [{"username": "admin", "email": "admin@kalmia.difuse.io", "password": "admin", "admin": true},
 				  {"username": "user", "email": "user@kalmia.difuse.io", "password": "user", "admin": false}]
 	}`
 
 	err := utils.TouchFile("./config.json")
-
 	if err != nil {
 		panic(err)
 	}
 
 	prettyJson, err := utils.PrettyJSON(configJson)
-
 	if err != nil {
 		prettyJson = configJson
 	}
 
 	err = utils.WriteToFile("./config.json", prettyJson)
-
 	if err != nil {
 		panic(err)
 	}
@@ -53,20 +52,18 @@ func TestMain(m *testing.M) {
 	db.SetupBasicData(d, TestConfig.Admins)
 	db.InitCache()
 
-	serviceRegistry := NewServiceRegistry(d)
+	serviceRegistry := NewServiceRegistry(d, false, config.Secret{JwtSecretKey: "somesecret"})
 	TestAuthService = serviceRegistry.AuthService
 	TestDocService = serviceRegistry.DocService
 
 	code := m.Run()
 
 	err = utils.RemovePath(TestConfig.DataPath)
-
 	if err != nil {
 		logger.Error("Failed to remove test data path", zap.Error(err))
 	}
 
 	err = utils.RemovePath("./config.json")
-
 	if err != nil {
 		logger.Error("Failed to remove test config file: %v", zap.Error(err))
 	}

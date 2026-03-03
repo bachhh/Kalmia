@@ -19,6 +19,12 @@ import (
 	gormLogger "gorm.io/gorm/logger"
 )
 
+const (
+	DB_TYPE_SQLITE        = "sqlite"
+	DIALECT_NAME_POSTGRES = "postgres"
+	DIALECT_NAME_SQLITE   = "sqlite"
+)
+
 func SetupDatabase(env string, database string, dataPath string) *gorm.DB {
 	var db *gorm.DB
 	var err error
@@ -28,7 +34,7 @@ func SetupDatabase(env string, database string, dataPath string) *gorm.DB {
 		SkipDefaultTransaction: true,
 	}
 
-	if database == "sqlite" {
+	if database == DB_TYPE_SQLITE {
 		db, err = gorm.Open(sqlite.Open(path.Join(dataPath, "kalmia.db")), ormConfig)
 	} else {
 		db, err = gorm.Open(postgres.Open(database), ormConfig)
@@ -38,7 +44,7 @@ func SetupDatabase(env string, database string, dataPath string) *gorm.DB {
 		logger.Panic("failed to connect to database", zap.Error(err))
 	}
 
-	if database == "sqlite" {
+	if database == DB_TYPE_SQLITE {
 		db.Exec("PRAGMA foreign_keys = ON")
 		db.Exec("PRAGMA journal_mode = WAL")
 		db.Exec("PRAGMA synchronous = NORMAL")
@@ -121,7 +127,8 @@ func updateUserPermissions(db *gorm.DB) error {
 	var result *gorm.DB
 	dialectName := strings.ToLower(db.Dialector.Name())
 
-	if dialectName == "postgres" {
+	switch dialectName {
+	case DIALECT_NAME_POSTGRES:
 		result = db.Exec(`
             UPDATE users
             SET permissions = CASE
@@ -131,7 +138,7 @@ func updateUserPermissions(db *gorm.DB) error {
             END
             WHERE permissions IS NULL OR permissions = ''
         `)
-	} else if dialectName == "sqlite" {
+	case DIALECT_NAME_SQLITE:
 		result = db.Exec(`
             UPDATE users
             SET permissions = CASE
@@ -141,7 +148,7 @@ func updateUserPermissions(db *gorm.DB) error {
             END
             WHERE permissions IS NULL OR permissions = ''
         `)
-	} else {
+	default:
 		return fmt.Errorf("unsupported database dialect: %s", dialectName)
 	}
 

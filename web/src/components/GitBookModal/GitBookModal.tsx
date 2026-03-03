@@ -168,6 +168,7 @@ export default function GitBookModal() {
         bucketNavImage: "",
         bucketNavImageDark: "",
         tokenSecret: "",
+        redirectURL: "",
       };
 
       const createResponse = await createDocumentation(payload);

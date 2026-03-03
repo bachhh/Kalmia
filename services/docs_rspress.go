@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"os"
@@ -1185,7 +1186,10 @@ func (service *DocService) RsPressBuild(docId uint, rebuild bool) error {
 	}
 
 	for fileName, content := range filesContent {
-		if err := db.SetKey([]byte(fmt.Sprintf("rs|doc_%d|%s", docId, fileName)), content, utils.GetContentType(fileName)); err != nil {
+		if err := db.SetKey(
+			[]byte(fmt.Sprintf("rs|doc_%d|%s", docId, fileName)),
+			content, utils.GetContentType(fileName),
+		); err != nil {
 			return err
 		}
 	}
@@ -1193,39 +1197,56 @@ func (service *DocService) RsPressBuild(docId uint, rebuild bool) error {
 	return nil
 }
 
-func (service *DocService) GetRsPress(urlPath string) (uint, string, string, bool, error) {
-	cachedBaseURLs, err := db.GetCacheByPrefix("burl|doc_")
+type GetRsPressDocData struct {
+	ID          uint
+	Path        string
+	BaseURL     string
+	TokenSecret string
+	RequireAuth bool
+}
 
-	if err == nil && len(cachedBaseURLs) > 0 {
-		for cacheKey, baseURL := range cachedBaseURLs {
-			if strings.HasPrefix(urlPath, baseURL) {
-				split := strings.Split(cacheKey, "|")
-				docID := strings.TrimPrefix("doc_", split[1])
-				reqAuth, err := strconv.ParseBool(split[2])
-				if err != nil {
-					continue
-				}
+// GetRsPressFromURL serve user the document by parsing request endpoint.
+func (service *DocService) GetRsPressFromURL(urlPath string) (GetRsPressDocData, bool, error) {
+	// 1. try lookup cache from url first
 
-				id, err := strconv.Atoi(docID)
-				if err != nil {
-					continue
-				}
+	// TODO: rewrite the caching here to have more clarity
+	// cachedBaseURLs, err := db.GetCacheByPrefix("burl|doc_")
+	// if err == nil && len(cachedBaseURLs) > 0 {
+	// 	for cacheKey, baseURL := range cachedBaseURLs {
+	// 		if strings.HasPrefix(urlPath, baseURL) {
+	// 			split := strings.Split(cacheKey, "|")
+	// 			docID := strings.TrimPrefix(split[1], "doc_")
+	// 			reqAuth, err := strconv.ParseBool(split[2])
+	// 			if err != nil {
+	// 				logger.Error("error parsing cache key", zap.Error(err))
+	// 				continue
+	// 			}
 
-				docPath := filepath.Join("data", "rspress_data", fmt.Sprintf("doc_%d", id), "build")
-				if _, err := os.Stat(docPath); os.IsNotExist(err) {
-					continue
-				}
+	// 			id, err := strconv.Atoi(docID)
+	// 			if err != nil {
+	// 				logger.Error("error parsing cache key doc_id", zap.Error(err))
+	// 				continue
+	// 			}
 
-				files, err := os.ReadDir(docPath)
-				if err != nil || len(files) == 0 {
-					continue
-				}
+	// 			docPath := filepath.Join("data", "rspress_data", fmt.Sprintf("doc_%d", id), "build")
+	// 			if _, err := os.Stat(docPath); os.IsNotExist(err) {
+	// 				continue
+	// 			}
 
-				return uint(id), docPath, baseURL, reqAuth, nil
-			}
-		}
-	}
+	// 			files, err := os.ReadDir(docPath)
+	// 			if err != nil || len(files) == 0 {
+	// 				continue
+	// 			}
 
+	// 			logger.Info(fmt.Sprintf("cache hit document_id:%d", docID))
+	// 			return uint(id), docPath, baseURL, "", reqAuth, nil
+	// 		}
+	// 	}
+	// }
+
+	// 2. cache lookup failed:
+	// - get document id with matching base_url with urlPath.
+	// - fetch the file directly from filesystem and serve.
 	var doc models.Documentation
 	dialectName := strings.ToLower(service.DB.Dialector.Name())
 	var query string
@@ -1235,37 +1256,38 @@ func (service *DocService) GetRsPress(urlPath string) (uint, string, string, boo
 		query = "? LIKE base_url || ?"
 		args = []interface{}{urlPath, "%"}
 	default:
-		return 0, "", "", false, fmt.Errorf("unsupported_database_type: %s", dialectName)
+		return GetRsPressDocData{}, false, fmt.Errorf("unsupported_database_type: %s", dialectName)
 	}
 
+	var err error
 	err = service.DB.Where(query, args...).
 		Order("LENGTH(base_url) DESC").
 		First(&doc).Error
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return 0, "", "", false, fmt.Errorf("doc_does_not_exist")
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return GetRsPressDocData{}, false, nil
 		}
-		return 0, "", "", false, fmt.Errorf("database_error: %v", err)
+		return GetRsPressDocData{}, false, fmt.Errorf("database_error: %v", err)
 	}
 
 	docPath := filepath.Join("data", "rspress_data", fmt.Sprintf("doc_%d", doc.ID), "build")
 	if _, err := os.Stat(docPath); os.IsNotExist(err) {
-		return 0, "", "", false, fmt.Errorf("rspress_build_not_found on path %s", docPath)
+		return GetRsPressDocData{}, false, fmt.Errorf("rspress_build_not_found on path %s", docPath)
 	}
 
 	files, err := os.ReadDir(docPath)
 	if err != nil {
-		return 0, "", "", false, fmt.Errorf("error_reading_rspress_directory")
+		return GetRsPressDocData{}, false, fmt.Errorf("error_reading_rspress_directory")
 	}
 
 	if len(files) == 0 {
-		return 0, "", "", false, fmt.Errorf("rspress_build_empty")
+		return GetRsPressDocData{}, false, fmt.Errorf("rspress_build_empty")
 	}
 
-	cacheKey := fmt.Sprintf("burl|doc_%d|%t", doc.ID, doc.RequireAuth)
-	_ = db.SetKey([]byte(cacheKey), []byte(doc.BaseURL), "text/plain")
+	// cacheKey := fmt.Sprintf("burl|doc_%d|%t", doc.ID, doc.RequireAuth)
+	// _ = db.SetKey([]byte(cacheKey), []byte(doc.BaseURL), "text/plain")
 
-	return doc.ID, docPath, doc.BaseURL, doc.RequireAuth, nil
+	return GetRsPressDocData{doc.ID, docPath, doc.BaseURL, doc.TokenSecret, doc.RequireAuth}, true, nil
 }
 
 func (service *DocService) AddBuildTrigger(docId uint, isDelete bool) error {

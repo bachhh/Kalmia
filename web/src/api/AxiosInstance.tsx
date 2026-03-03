@@ -7,11 +7,11 @@ import axios, {
 } from "axios";
 
 export const baseURL: string =
-  process.env.NODE_ENV === "development" ? "http://127.0.0.1:2727" : "";
+  process.env.NODE_ENV === "development" ? "http://localhost:2727" : "";
 
 const instance: AxiosInstance = axios.create({
   baseURL,
-  withCredentials: false,
+  withCredentials: true, // TODO: revert to false
 });
 
 instance.interceptors.response.use(

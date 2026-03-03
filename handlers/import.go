@@ -27,7 +27,7 @@ func ImportGitbook(services *services.ServiceRegistry, w http.ResponseWriter, r 
 
 	jsonString, err := services.DocService.ImportGitbook(request.URL, request.Username, request.Password, cfg)
 	if err != nil {
-		SendJSONResponse(http.StatusInternalServerError, w, map[string]string{"status": "error", "message": "gitbook_proccessing_failed", "error": err.Error()})
+		SendJSONResponse(http.StatusInternalServerError, w, map[string]string{"status": "error", "message": "gitbook_processing_failed", "error": err.Error()})
 		return
 	}
 

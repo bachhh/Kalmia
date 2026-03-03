@@ -76,3 +76,5 @@ func TestGetJWTUserId(t *testing.T) {
 		t.Errorf("Expected UserId '1', got %s", userId)
 	}
 }
+
+func TestGenJWT(t *testing.T) {

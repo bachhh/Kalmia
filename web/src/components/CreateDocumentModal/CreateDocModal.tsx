@@ -162,6 +162,7 @@ export default function CreateDocModal() {
     gitPassword: "",
     gitBranch: "",
     tokenSecret: "",
+    redirectURL: "",
   });
 
   const [moreField, setMoreField] = useState<MoreLabelLinks[]>([
@@ -288,6 +289,7 @@ export default function CreateDocModal() {
         gitPassword: "",
         gitBranch: "",
         tokenSecret: "",
+        redirectURL: "",
       });
       SetIsAuthenticationToggleOn(false);
       setSocialPlatformField([{ icon: "", link: "" }]);
@@ -460,6 +462,7 @@ export default function CreateDocModal() {
           gitPassword: formData.gitPassword || "",
           gitBranch: formData.gitBranch || "",
           tokenSecret: formData.tokenSecret || "",
+          redirectURL: formData.redirectURL || "",
         }
       : {};
 
@@ -492,6 +495,7 @@ export default function CreateDocModal() {
       bucketNavImage: uploadedFiles.navImage.name || "",
       bucketNavImageDark: uploadedFiles.navImageDark.name || "",
       tokenSecret: formData.tokenSecret || "",
+      redirectURL: formData.redirectURL || "",
     };
     let result;
 
@@ -768,6 +772,14 @@ export default function CreateDocModal() {
                     value={formData?.tokenSecret}
                     onChange={handleChange}
                     name="tokenSecret"
+                    required={false}
+                  />
+                  <FormField
+                    label={t("redirect_url")}
+                    placeholder=""
+                    value={formData?.redirectURL}
+                    onChange={handleChange}
+                    name="redirectURL"
                     required={false}
                   />
                 </div>

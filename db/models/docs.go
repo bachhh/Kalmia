@@ -85,6 +85,7 @@ type Documentation struct {
 	GitPassword      string      `json:"gitPassword,omitempty"`
 	GitBranch        string      `json:"gitBranch,omitempty"`
 	TokenSecret      string      `json:"tokenSecret,omitempty"`
+	RedirectURL      string      `json:"redirectURL,omitempty"`
 }
 
 func (s Documentation) MarshalJSON() ([]byte, error) {

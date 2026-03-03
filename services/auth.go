@@ -6,19 +6,21 @@ import (
 
 	"git.difuse.io/Difuse/kalmia/config"
 	"git.difuse.io/Difuse/kalmia/db/models"
+	"git.difuse.io/Difuse/kalmia/logger"
 	"git.difuse.io/Difuse/kalmia/utils"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 type AuthService struct {
 	DB           *gorm.DB
-	jwtSecretKey string
+	JwtSecretKey string
 }
 
 func NewAuthService(db *gorm.DB, jwtSecretKey string) *AuthService {
 	return &AuthService{
 		DB:           db,
-		jwtSecretKey: jwtSecretKey,
+		JwtSecretKey: jwtSecretKey,
 	}
 }
 
@@ -50,7 +52,7 @@ func (service *AuthService) CreateJWT(username, password string) (map[string]int
 		user.Photo,
 		user.Admin,
 		user.Permissions,
-		service.jwtSecretKey,
+		service.JwtSecretKey,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed_to_generate_jwt")
@@ -66,7 +68,7 @@ func (service *AuthService) CreateJWT(username, password string) (map[string]int
 		return nil, fmt.Errorf("failed_to_create_token")
 	}
 
-	claims, err := utils.ValidateJWT(tokenString, service.jwtSecretKey)
+	claims, err := utils.ValidateJWT(tokenString, service.JwtSecretKey)
 	if err != nil {
 		service.DB.Where("token = ?", tokenString).Delete(&models.Token{})
 		return nil, fmt.Errorf("invalid_jwt_created")
@@ -89,12 +91,14 @@ func (service *AuthService) VerifyTokenInDb(token string, needAdmin bool) bool {
 
 	query := service.DB.Joins("JOIN users ON users.id = tokens.user_id").Where("tokens.token = ?", token).First(&tokenRecord)
 	if query.Error != nil {
+		logger.Error("error while verifying token", zap.Error(query.Error))
 		return false
 	}
 
 	if needAdmin {
 		var user models.User
 		if err := service.DB.Where("id = ?", tokenRecord.UserID).First(&user).Error; err != nil {
+			logger.Error("error while verifying token", zap.Error(query.Error))
 			return false
 		}
 		if !user.Admin {
@@ -102,9 +106,13 @@ func (service *AuthService) VerifyTokenInDb(token string, needAdmin bool) bool {
 		}
 	}
 
-	_, err := utils.ValidateJWT(token, service.jwtSecretKey)
+	_, err := utils.ValidateJWT(token, service.JwtSecretKey)
+	if err != nil {
+		logger.Error("error while verifying token", zap.Error(query.Error))
+		return false
+	}
 
-	return err == nil
+	return true
 }
 
 func (service *AuthService) IsTokenAdmin(token string) bool {
@@ -278,7 +286,7 @@ func (service *AuthService) CreateJWTFromEmail(email string) (string, error) {
 		user.Photo,
 		user.Admin,
 		user.Permissions,
-		service.jwtSecretKey,
+		service.JwtSecretKey,
 	)
 	if err != nil {
 		return "", fmt.Errorf("failed_to_generate_jwt")
@@ -294,7 +302,7 @@ func (service *AuthService) CreateJWTFromEmail(email string) (string, error) {
 		return "", fmt.Errorf("failed_to_create_token")
 	}
 
-	_, err = utils.ValidateJWT(tokenString, service.jwtSecretKey)
+	_, err = utils.ValidateJWT(tokenString, service.JwtSecretKey)
 	if err != nil {
 		service.DB.Where("token = ?", tokenString).Delete(&models.Token{})
 		return "", fmt.Errorf("invalid_jwt_created")
@@ -304,7 +312,7 @@ func (service *AuthService) CreateJWTFromEmail(email string) (string, error) {
 }
 
 func (service *AuthService) RefreshJWT(token string) (string, error) {
-	claims, err := utils.ValidateJWT(token, service.jwtSecretKey)
+	claims, err := utils.ValidateJWT(token, service.JwtSecretKey)
 	if err != nil {
 		return "", fmt.Errorf("invalid_jwt")
 	}
@@ -326,7 +334,7 @@ func (service *AuthService) RefreshJWT(token string) (string, error) {
 		claims.Photo,
 		claims.IsAdmin,
 		string(permissionsJSON),
-		service.jwtSecretKey,
+		service.JwtSecretKey,
 	)
 	if err != nil {
 		return "", fmt.Errorf("failed_to_generate_new_jwt")
@@ -355,7 +363,7 @@ func (service *AuthService) ValidateJWT(token string) (map[string]interface{}, e
 		return nil, fmt.Errorf("token_not_found")
 	}
 
-	claims, err := utils.ValidateJWT(token, service.jwtSecretKey)
+	claims, err := utils.ValidateJWT(token, service.JwtSecretKey)
 	if err != nil {
 		return nil, fmt.Errorf("invalid_jwt")
 	}
@@ -372,7 +380,7 @@ func (service *AuthService) ValidateJWT(token string) (map[string]interface{}, e
 }
 
 func (service *AuthService) RevokeJWT(token string) error {
-	_, err := utils.ValidateJWT(token, service.jwtSecretKey)
+	_, err := utils.ValidateJWT(token, service.JwtSecretKey)
 	if err != nil {
 		return fmt.Errorf("invalid_jwt")
 	}
@@ -418,4 +426,19 @@ func (service *AuthService) OAuthProviders() []string {
 	}
 
 	return providers
+}
+
+// TODO: refactor this, domain-wise this function is a join of auth and doc services.
+func (srv *AuthService) VerifyDocumentJWT(jwtToken string, docID uint) (*utils.DocJWTData, error) {
+	db := srv.DB
+	var doc models.Documentation
+	if err := db.Where("id = ?", docID).Find(&doc).Error; err != nil {
+		return nil, err
+	}
+
+	claim, err := utils.ValidateDocJWT(jwtToken, doc.TokenSecret)
+	if err != nil {
+		return nil, err
+	}
+	return claim, nil
 }
